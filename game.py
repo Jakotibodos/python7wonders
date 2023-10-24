@@ -154,14 +154,14 @@ class GameState:
 			totalscore = bluescore + greenscore + redscore + moneyscore + yellowscore + purplescore
 			text = "Final score: Blue: %d, Green: %d, red: %d, yellow: %d, purple: %d, $: %d, total: %d" % (bluescore, greenscore, redscore, yellowscore, purplescore, moneyscore, totalscore)
 			self.logger.log_freetext(player.get_name() + " " + text)
-			print text
+			print(text)
 		
 		logfile = open("logfile.txt", "w")
 		self.logger.dump(logfile)
 		logfile.close()
 
 init_games()
-game = GameState([("alice", Personalities.StupidAI), ("Bob", Personalities.StupidAI), ("Frank", Personalities.StupidAI)])
+game = GameState([("Jakob", Personalities.Human), ("Bob", Personalities.StupidAI), ("Frank", Personalities.StupidAI)])
 game.logger.card_list = __all_cards
 game.setup_age_cards(__all_cards)
 game.game_loop()

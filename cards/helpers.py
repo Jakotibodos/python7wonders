@@ -37,7 +37,7 @@ def build_card(colour, name, age, cost, players, infostr):
 			card.colour = CARDS_PURPLE
 		return card
 	
-	print "Error loading card:", name
+	print("Error loading card:", name)
 	return None
 
 
@@ -63,7 +63,7 @@ def read_cards_file(filename):
 			if c:
 				c.parse_chains(prebuilt, postbuilt)
 				cards.append(c)
-	print "Loaded %d cards" % ( len(cards))
+	print("Loaded %d cards" % ( len(cards)))
 	return cards
 
 
