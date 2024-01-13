@@ -27,9 +27,12 @@ class Card:
 c = Card("test","red",[0,0,0,1,0,0,0],lambda player: player.add_resource(RESOURCE_WOOD,1))
 
 #TODO Implement pre and post chains
-
+#TODO Convert java cards to python
+#TODO test functionality of every card
+#Card(id,name,color,age,cost,function)
+#{coins,wood,stone,bricks,ore,glass,papyrus,textile}
 #AGE 1 CARDS
-        
+
 #Age 1 Brown cards
 c1 =   Card(1,"Lumber Yard",COLOR_BROWN,1,None,lambda p : p.add_resource(RESOURCE_WOOD,1))  #wood
 c2 =   Card(2,"Stone Pit",COLOR_BROWN,1,None,lambda p : p.add_resource(RESOURCE_STONE,1))  #stone
@@ -55,44 +58,42 @@ c17 = Card(17,"Theatre",COLOR_BLUE,1,None,lambda p : p.add_points(POINTS_BLUE,2)
 
  #Age 1 Yellow cards
 c18 = Card(18,"Tavern",COLOR_YELLOW,1,None,lambda p : p.add_resource(RESOURCE_GOLD,5))  #5 coins
-c19 = Card(19,"Marketplace",COLOR_YELLOW,1,None,(Player p )->p.lowerTradingCosts(2))  #lower both grey trading costs
-c20 = Card(20,"West Trading Post",COLOR_YELLOW,1,None,(Player p )->p.lowerTradingCosts(0))  #lower left brown trading costs
-c21 = Card(21,"East Trading Post",COLOR_YELLOW,1,None,(Player p )->p.lowerTradingCosts(1))  #lower right brown trading costs
+c19 = Card(19,"Marketplace",COLOR_YELLOW,1,None,lambda p : p.lower_trading_cost("grey"))  #lower both grey trading costs
+c20 = Card(20,"West Trading Post",COLOR_YELLOW,1,None,lambda p : p.lower_trading_cost("east"))  #lower east brown trading costs
+c21 = Card(21,"East Trading Post",COLOR_YELLOW,1,None,lambda p : p.lower_trading_cost("west"))  #lower west brown trading costs
 
  #Age 1 Red cards
-c22 = Card(22,"Stockade",COLOR_RED,  int[] {0,1,0,0,0,0,0,0},1,(Player p)->p.addShields(1))
-c23 = Card(23,"Barracks",COLOR_RED,  int[] {0,0,0,1,0,0,0,0},1,(Player p)->p.addShields(1))
-c24 = Card(24,"Guard_Tower",COLOR_RED,  int[] {0,0,0,0,1,0,0,0},1,(Player p)->p.addShields(1))
+c22 = Card(22,"Stockade",COLOR_RED,1,[RESOURCE_WOOD], lambda p : p.add_shields(1))
+c23 = Card(23,"Barracks",COLOR_RED,1,[RESOURCE_ORE],lambda p : p.add_shields(1))
+c24 = Card(24,"Guard_Tower",COLOR_RED,1,[RESOURCE_BRICK],lambda p : p.add_shields(1))
 
  #Age 1 Green cards
-c25 = Card(25,"Apothecary",COLOR_GREEN,  int[] {0,0,0,0,0,0,0,1},1,(Player p)->p.addScience(0))  #compass
-c26 = Card(26,"Workshop",COLOR_GREEN,  int[]{0,0,0,0,0,1,0,0},1,(Player p)->p.addScience(1))  #gear
-c27 = Card(27,"Scriptorium",COLOR_GREEN,  int[]{0,0,0,0,0,0,1,0},1,(Player p)->p.addScience(2))  #tablet
+c25 = Card(25,"Apothecary",COLOR_GREEN,1,[RESOURCE_LOOM],lambda p : p.add_science(SCIENCE_COMPASS))  #compass
+c26 = Card(26,"Workshop",COLOR_GREEN,1,[RESOURCE_GLASS],lambda p : p.add_science(SCIENCE_GEAR))  #gear
+c27 = Card(27,"Scriptorium",COLOR_GREEN,1,[RESOURCE_PAPYRUS],lambda p : p.add_science(SCIENCE_TABLET))  #tablet
 
  #AGE 2 CARDS
 
  #Age 2 Brown cards
-c28 = Card(28,"Sawmill",COLOR_BROWN,  int[]{1,0,0,0,0,0,0,0},2,(Player p)->p.addResource(1,2))  #2 wood
-c29 = Card(29,"Quarry",COLOR_BROWN,  int[]{1,0,0,0,0,0,0,0},2,(Player p)->p.addResource(2,2))  #2 stone
-c30 = Card(30,"Brickyard",COLOR_BROWN,  int[]{1,0,0,0,0,0,0,0},2,(Player p)->p.addResource(3,2))  #2 brick
-c31 = Card(31,"Foundry",COLOR_BROWN,  int[]{1,0,0,0,0,0,0,0},2,(Player p)->p.addResource(4,2))  #2 ore
+c28 = Card(28,"Sawmill",COLOR_BROWN,2,[RESOURCE_GOLD],lambda p : p.add_resource(RESOURCE_WOOD,2))  #2 wood
+c29 = Card(29,"Quarry",COLOR_BROWN,2,[RESOURCE_GOLD],lambda p : p.add_resource(RESOURCE_STONE,2))  #2 stone
+c30 = Card(30,"Brickyard",COLOR_BROWN,2,[RESOURCE_GOLD],lambda p : p.add_resource(RESOURCE_BRICK,2))  #2 brick
+c31 = Card(31,"Foundry",COLOR_BROWN,2,[RESOURCE_GOLD],lambda p : p.add_resource(RESOURCE_ORE,2))  #2 ore
 
  #Age 2 Grey cards
-c32 = Card(32,"Glassworks",COLOR_GREY,2,(Player p )->p.addResource(5,1))  #glass
-c33 = Card(33,"Press",COLOR_GREY,2,(Player p )->p.addResource(6,1))  #papyrus
-c34 = Card(34,"Loom",COLOR_GREY,2,(Player p )->p.addResource(7,1))  #textile
+c32 = Card(32,"Glassworks",COLOR_GREY,2,None,lambda p : p.add_resource(RESOURCE_GLASS,1))  #glass
+c33 = Card(33,"Press",COLOR_GREY,2,None,lambda p : p.add_resource(RESOURCE_PAPYRUS,1))  #papyrus
+c34 = Card(34,"Loom",COLOR_GREY,2,None,lambda p : p.add_resource(RESOURCE_LOOM,1))  #loom
 
  #Age 2 Blue cards
-c35 = Card(35,"Statue",COLOR_BLUE,  int[] {0,1,0,2,0,0,0,0},2,(Player p )->p.addBluePoints(4))  #4 Blue Points
-c36 = Card(36,"Aqueduct",COLOR_BLUE,  int[] {0,0,3,0,0,0,0,0},2,(Player p )->p.addBluePoints(5))  #5 Blue Points
-c37 = Card(37,"Temple",COLOR_BLUE,  int[] {0,1,0,1,0,1,0,0},2,(Player p )->p.addBluePoints(4))  #4 Blue Points
-c38 = Card(38,"Courthouse",COLOR_BLUE,  int[] {0,0,0,2,0,0,0,1},2,(Player p )->p.addBluePoints(5))  #4 Blue Points
+c35 = Card(35,"Statue",COLOR_BLUE,2,[RESOURCE_WOOD,RESOURCE_ORE,RESOURCE_ORE],lambda p : p.add_points(POINTS_BLUE,4))  #4 Blue Points
+c36 = Card(36,"Aqueduct",COLOR_BLUE,2,[RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE],lambda p : p.add_points(POINTS_BLUE,5))  #5 Blue Points
+c37 = Card(37,"Temple",COLOR_BLUE,2,[RESOURCE_WOOD,RESOURCE_BRICK,RESOURCE_GLASS],lambda p : p.add_points(POINTS_BLUE,4))  #4 Blue Points
+c38 = Card(38,"Courthouse",COLOR_BLUE,2,[RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_LOOM],lambda p : p.add_points(POINTS_BLUE,4))  #4 Blue Points
 
  #Age 2 Yellow cards
-c39 = Card(39,"Caravansery",COLOR_YELLOW,  int[] {0,2,0,0,0,0,0,0},2,
-	(Player p )->{Integer[] comp =   Integer[4]comp[0] = 1comp[1] = 2comp[2] = 3comp[3] = 4p.addYellowComp(comp)})  #Brown ressources composition
-c40 = Card(40,"Forum",COLOR_YELLOW,  int[] {0,0,0,2,0,0,0,0},2,
-	(Player p )->{Integer[] comp =   Integer[3]comp[0] = 5comp[1] = 6comp[2] = 7p.addYellowComp(comp)})  #Grey ressources composition
+c39 = Card(39,"Caravansery",COLOR_YELLOW,2,[RESOURCE_WOOD,RESOURCE_WOOD],lambda p : p.add_free_conditional_resource("brown")) #Brown resources composition
+c40 = Card(40,"Forum",COLOR_YELLOW,2,[RESOURCE_BRICK,RESOURCE_BRICK],lambda p : p.add_free_conditional_resource("grey"))  #Grey ressources composition
 c41 = Card(41,"Vineyard",COLOR_YELLOW,2,
 		(Player p )->{int coinsToAdd = p.getLeftPlayer().getCountColor(0)+p.getRightPlayer().getCountColor(0)+p.getCountColor(0)
 				p.addResource(0, coinsToAdd)})  #Add coins = brown cards of you and neighbors

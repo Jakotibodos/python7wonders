@@ -31,7 +31,10 @@ class Player:
 			RESOURCE_PAPYRUS 	: 0
 		}
 		self.conditional_resources = [] #For brown cards with /
-		self.free_conditional_resources = [0,0] #[brown,grey] #For yellow card and wonders with W/B/S/O or G/P/L #Untradable
+		self.free_conditional_resources = {#For yellow card and wonders with W/B/S/O or G/P/L #Untradable
+			"brown":0,
+			"grey":0
+		} 
 		self.east_trade_prices = 2 #for brown resources <
 		self.west_trade_prices = 2 #for brown resources >
 		self.grey_trade_prices = 2 #for both player <>
@@ -47,6 +50,12 @@ class Player:
 			POINTS_YELLOW:0,
 			POINTS_PURPLE:0,
 			POINTS_GREEN:0
+		}
+		self.science = {
+			SCIENCE_GEAR:0,
+			SCIENCE_COMPASS:0,
+			SCIENCE_TABLET:0,
+			"any":0 #for conditional sciences, used at the end when calculating points
 		}
 	
 	def set_personality(self, persona):
@@ -64,8 +73,28 @@ class Player:
 	def add_conditional_resource(self,conditional_resource):
 		self.conditional_resources.append(conditional_resource)
 	
+	def add_free_conditional_resource(self,color):
+		self.free_conditional_resources[color]+=1 #color = "brown" or "grey"
+
 	def add_points(self,category,amount):
 		self.points[category]+=amount
+
+	def vineyard(self):
+		
+
+	def lower_trading_cost(self,trade_type):
+		if trade_type == "east": #east brown cards
+			self.east_trade_prices = 1
+		elif trade_type == "west": #west brown cards
+			self.west_trade_prices = 1
+		else: #if "grey"
+			self.grey_trade_prices = 1
+
+	def add_shields(self, amount): #shields for war
+		self.shields += amount
+	
+	def add_science(self, symbol):
+		self.science[symbol]+=1 #"any" for a conditional science card/wonder"
 
 	def play_hand(self, hand, west_player, east_player):
 		''' return the card and action done'''
