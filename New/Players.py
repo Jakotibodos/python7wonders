@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright 2015 - Jonathan Gordon
+# Copyright 2015 - Jakob Cordua Thibodeau
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -12,33 +12,42 @@
 
 from collections import deque
 from common import *
-import cards
+
 
 class Player:
 	def __init__(self, name):
 		self.name = name
-		self.money = 3
 		self.tableau = [] # all the players played cards
 		self.war_results = [] # war wins/losses
 		self.shields = 0 #Shield/military points
 		self.resources = { #This only counts fixed ressources
+			RESOURCE_GOLD : 3, #Yes, gold is a resource
 			RESOURCE_WOOD 	: 0,
 			RESOURCE_ORE 	: 0,
 			RESOURCE_STONE 	: 0,
 			RESOURCE_BRICK 	: 0,
 			RESOURCE_GLASS 	: 0,
 			RESOURCE_LOOM 	: 0,
-			RESOURCE_PAPER 	: 0
+			RESOURCE_PAPYRUS 	: 0
 		}
 		self.conditional_resources = [] #For brown cards with /
 		self.free_conditional_resources = [0,0] #[brown,grey] #For yellow card and wonders with W/B/S/O or G/P/L #Untradable
-		self.east_trade_prices = [2,2] #[brown,grey]
-		self.west_trade_prices = [2,2] #[brown,grey]
+		self.east_trade_prices = 2 #for brown resources <
+		self.west_trade_prices = 2 #for brown resources >
+		self.grey_trade_prices = 2 #for both player <>
 		self.west_player = None
 		self.east_player = None
 		self.wonder = None
 		self.personality = None
-		
+		self.points = {
+			POINTS_RED:0,
+			POINTS_GOLD:0,
+			POINTS_WONDER:0,
+			POINTS_BLUE:0,
+			POINTS_YELLOW:0,
+			POINTS_PURPLE:0,
+			POINTS_GREEN:0
+		}
 	
 	def set_personality(self, persona):
 		self.personality = persona
@@ -49,6 +58,15 @@ class Player:
 	def get_cards(self):
 		return self.tableau
 	
+	def add_resource(self, resource, amount):
+		self.resources[resource] += amount
+
+	def add_conditional_resource(self,conditional_resource):
+		self.conditional_resources.append(conditional_resource)
+	
+	def add_points(self,category,amount):
+		self.points[category]+=amount
+
 	def play_hand(self, hand, west_player, east_player):
 		''' return the card and action done'''
 		options = []
