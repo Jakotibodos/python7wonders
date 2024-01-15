@@ -32,8 +32,8 @@ class Player:
 		}
 		self.conditional_resources = [] #For brown cards with /
 		self.free_conditional_resources = {#For yellow card and wonders with W/B/S/O or G/P/L #Untradable
-			"brown":0,
-			"grey":0
+			COLOR_BROWN:0,
+			COLOR_GREY:0
 		} 
 		self.east_trade_prices = 2 #for brown resources <
 		self.west_trade_prices = 2 #for brown resources >
@@ -57,6 +57,16 @@ class Player:
 			SCIENCE_TABLET:0,
 			"any":0 #for conditional sciences, used at the end when calculating points
 		}
+		self.color_count = {	#Amount of cards of that color players owns
+			COLOR_BROWN:0,
+			COLOR_GREY:0,
+			COLOR_RED:0,
+			COLOR_YELLOW:0,
+			COLOR_BLUE:0,
+			COLOR_GREEN:0,
+			COLOR_PURPLE:0
+		}
+		self.endgame_scoring_functions = []
 	
 	def set_personality(self, persona):
 		self.personality = persona
@@ -66,6 +76,9 @@ class Player:
 	
 	def get_cards(self):
 		return self.tableau
+	
+	def get_color_count(self,color): 
+		return self.color_count(color) #int, number of cards built of that color
 	
 	def add_resource(self, resource, amount):
 		self.resources[resource] += amount
@@ -77,10 +90,25 @@ class Player:
 		self.free_conditional_resources[color]+=1 #color = "brown" or "grey"
 
 	def add_points(self,category,amount):
-		self.points[category]+=amount
-
-	def vineyard(self):
+		self.points[category] += amount
 		
+	#For coins only, points are at the end
+	#Bazar and Vineyard (that use this) should be put at the end of queue when played	
+	def add_coins_per_card(self,amount,card_color,me=True,east=False,west=False):
+		if me:
+			self.resources[POINTS_GOLD] += amount * self.get_color_count(card_color) 
+		if east:
+			self.resources[POINTS_GOLD] += amount * self.east_player.get_color_count(card_color)
+		if west:
+			self.resources[POINTS_GOLD] += amount * self.west_player.get_color_count(card_color)  
+	
+	def add_points_per_card(self,amount,played_card_color,point_card_color,me=True,east=False,west=False):
+		if me:
+			self.p += amount * self.get_color_count(card_color) 
+		if east:
+			self.resources[POINTS_GOLD] += amount * self.east_player.get_color_count(card_color)
+		if west:
+			self.resources[POINTS_GOLD] += amount * self.west_player.get_color_count(card_color)
 
 	def lower_trading_cost(self,trade_type):
 		if trade_type == "east": #east brown cards

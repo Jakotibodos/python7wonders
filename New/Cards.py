@@ -58,7 +58,7 @@ c17 = Card(17,"Theatre",COLOR_BLUE,1,None,lambda p : p.add_points(POINTS_BLUE,2)
 
  #Age 1 Yellow cards
 c18 = Card(18,"Tavern",COLOR_YELLOW,1,None,lambda p : p.add_resource(RESOURCE_GOLD,5))  #5 coins
-c19 = Card(19,"Marketplace",COLOR_YELLOW,1,None,lambda p : p.lower_trading_cost("grey"))  #lower both grey trading costs
+c19 = Card(19,"Marketplace",COLOR_YELLOW,1,None,lambda p : p.lower_trading_cost(COLOR_GREY))  #lower both grey trading costs
 c20 = Card(20,"West Trading Post",COLOR_YELLOW,1,None,lambda p : p.lower_trading_cost("east"))  #lower east brown trading costs
 c21 = Card(21,"East Trading Post",COLOR_YELLOW,1,None,lambda p : p.lower_trading_cost("west"))  #lower west brown trading costs
 
@@ -92,36 +92,32 @@ c37 = Card(37,"Temple",COLOR_BLUE,2,[RESOURCE_WOOD,RESOURCE_BRICK,RESOURCE_GLASS
 c38 = Card(38,"Courthouse",COLOR_BLUE,2,[RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_LOOM],lambda p : p.add_points(POINTS_BLUE,4))  #4 Blue Points
 
  #Age 2 Yellow cards
-c39 = Card(39,"Caravansery",COLOR_YELLOW,2,[RESOURCE_WOOD,RESOURCE_WOOD],lambda p : p.add_free_conditional_resource("brown")) #Brown resources composition
-c40 = Card(40,"Forum",COLOR_YELLOW,2,[RESOURCE_BRICK,RESOURCE_BRICK],lambda p : p.add_free_conditional_resource("grey"))  #Grey ressources composition
-c41 = Card(41,"Vineyard",COLOR_YELLOW,2,
-		(Player p )->{int coinsToAdd = p.getLeftPlayer().getCountColor(0)+p.getRightPlayer().getCountColor(0)+p.getCountColor(0)
-				p.addResource(0, coinsToAdd)})  #Add coins = brown cards of you and neighbors
-c42 = Card(42,"Bazar",COLOR_YELLOW,2,
-		(Player p )->{int coinsToAdd = p.getLeftPlayer().getCountColor(1)+p.getRightPlayer().getCountColor(1)+p.getCountColor(1)
-				p.addResource(0, coinsToAdd*2)})  #Add coins = 2 x grey cards of you and neighbors
+c39 = Card(39,"Caravansery",COLOR_YELLOW,2,[RESOURCE_WOOD,RESOURCE_WOOD],lambda p : p.add_free_conditional_resource(COLOR_BROWN)) #Brown resources composition
+c40 = Card(40,"Forum",COLOR_YELLOW,2,[RESOURCE_BRICK,RESOURCE_BRICK],lambda p : p.add_free_conditional_resource(COLOR_GREY))  #Grey ressources composition
+c41 = Card(41,"Vineyard",COLOR_YELLOW,2,None,lambda p : p.add_coins_per_card(1,COLOR_BROWN,True,True,True))  #Add coins = brown cards of you and neighbors
+c42 = Card(42,"Bazar",COLOR_YELLOW,2,None,lambda p : p.add_coins_per_card(2,COLOR_GREY,True,True,True)) #Add coins = 2 x grey cards of you and neighbors
 
  #Age 2 Red cards
-c43 = Card(43,"Stables",COLOR_RED,  int[] {0,1,0,1,1,0,0,0},2,(Player p)->p.addShields(2))
-c44 = Card(44,"Archery Range",COLOR_RED,  int[] {0,2,0,0,1,0,0,0},2,(Player p)->p.addShields(2))
-c45 = Card(45,"Walls",COLOR_RED,  int[] {0,0,3,0,0,0,0,0},2,(Player p)->p.addShields(2))
-c46 = Card(46,"Training Ground",COLOR_RED,  int[] {0,1,0,0,2,0,0,0},2,(Player p)->p.addShields(2))
+c43 = Card(43,"Stables",COLOR_RED,[RESOURCE_WOOD,RESOURCE_BRICK,RESOURCE_ORE],2,lambda p : p.add_shields(2))
+c44 = Card(44,"Archery Range",COLOR_RED,2,[RESOURCE_WOOD,RESOURCE_ORE],lambda p : p.add_shields(2))
+c45 = Card(45,"Walls",COLOR_RED,2,[RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE],lambda p : p.add_shields(2))
+c46 = Card(46,"Training Ground",COLOR_RED,2,[RESOURCE_WOOD,RESOURCE_ORE,RESOURCE_ORE],lambda p : p.add_shields(2))
 
  #Age 2 Green cards
-c47 = Card(47,"Dispensary",COLOR_GREEN,  int[] {0,0,0,0,2,1,0,0},2,(Player p)->p.addScience(0))  #compass
-c48 = Card(48,"Laboratory",COLOR_GREEN,  int[]{0,0,0,2,0,0,1,0},2,(Player p)->p.addScience(1))  #gear
-c49 = Card(49,"Library",COLOR_GREEN,  int[]{0,0,2,0,0,0,0,1},2,(Player p)->p.addScience(2))  #tablet
-c50 = Card(50,"School",COLOR_GREEN,  int[]{0,1,0,0,0,0,1,0},2,(Player p)->p.addScience(2))  #tablet
+c47 = Card(47,"Dispensary",COLOR_GREEN,2,[RESOURCE_ORE,RESOURCE_ORE,RESOURCE_GLASS],lambda p : p.add_science(SCIENCE_COMPASS))  #compass
+c48 = Card(48,"Laboratory",COLOR_GREEN,2,[RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_PAPYRUS],lambda p : p.add_science(SCIENCE_GEAR))  #gear
+c49 = Card(49,"Library",COLOR_GREEN,2,[RESOURCE_STONE,RESOURCE_STONE,RESOURCE_LOOM],lambda p : p.add_science(SCIENCE_TABLET))  #tablet
+c50 = Card(50,"School",COLOR_GREEN,2,[RESOURCE_WOOD,RESOURCE_PAPYRUS],lambda p : p.add_science(SCIENCE_TABLET))  #tablet
 
 
  #AGE 3 CARDS
 
  #Age 3 Blue cards
-c51 = Card(51,"Pantheon",COLOR_BLUE,  int[] {0,0,0,2,1,1,1,1},3,(Player p )->p.addBluePoints(7))  #7 Blue Points
-c52 = Card(52,"Gardens",COLOR_BLUE,  int[] {0,1,0,2,0,0,0,0},3,(Player p )->p.addBluePoints(5))  #5 Blue Points
-c53 = Card(53,"Town Hall",COLOR_BLUE,  int[] {0,0,2,0,1,1,0,0},3,(Player p )->p.addBluePoints(6))  #6 Blue Points
-c54 = Card(54,"Palace",COLOR_BLUE,  int[] {0,1,1,1,1,1,1,1},3,(Player p )->p.addBluePoints(8))  #8 Blue Points
-c55 = Card(55,"Senate",COLOR_BLUE,  int[] {0,2,1,0,1,0,0,0},3,(Player p )->p.addBluePoints(6))  #6 Blue Points
+c51 = Card(51,"Pantheon",COLOR_BLUE,3,[RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_ORE,RESOURCE_GLASS,RESOURCE_PAPYRUS,RESOURCE_LOOM],lambda p : p.add_points(POINTS_BLUE,7))  #7 Blue Points
+c52 = Card(52,"Gardens",COLOR_BLUE,3,[RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_WOOD],lambda p : p.add_points(POINTS_BLUE,7))  #5 Blue Points
+c53 = Card(53,"Town Hall",COLOR_BLUE,3,[RESOURCE_STONE,RESOURCE_STONE,RESOURCE_ORE,RESOURCE_GLASS],lambda p : p.add_points(POINTS_BLUE,6))  #6 Blue Points
+c54 = Card(54,"Palace",COLOR_BLUE,3,[RESOURCE_STONE,RESOURCE_ORE,RESOURCE_WOOD,RESOURCE_BRICK,RESOURCE_GLASS,RESOURCE_PAPYRUS,RESOURCE_LOOM],lambda p : p.add_points(POINTS_BLUE,8))  #8 Blue Points
+c55 = Card(55,"Senate",COLOR_BLUE,3,[RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_STONE,RESOURCE_ORE],lambda p : p.add_points(POINTS_BLUE,6))  #6 Blue Points
 
  #Age 3 Yellow cards
 c56 = Card(56,"Lighthouse",COLOR_YELLOW,  int[] {0,0,1,0,0,1,0,0},3,(Player p )->{
