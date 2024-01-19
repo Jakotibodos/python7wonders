@@ -18,7 +18,7 @@ class Player:
 	def __init__(self, name):
 		self.name = name
 		self.tableau = [] # all the players played cards
-		self.war_results = [] # war wins/losses
+		self.war_losses = 0 # war wins/losses
 		self.shields = 0 #Shield/military points
 		self.resources = { #This only counts fixed ressources
 			RESOURCE_GOLD : 3, #Yes, gold is a resource
@@ -66,7 +66,7 @@ class Player:
 			COLOR_GREEN:0,
 			COLOR_PURPLE:0
 		}
-		self.endgame_scoring_functions = []
+		self.endgame_scoring_functions = [] #For cards that give points at the end of the game
 	
 	def set_personality(self, persona):
 		self.personality = persona
@@ -78,9 +78,9 @@ class Player:
 		return self.tableau
 	
 	def get_color_count(self,color): 
-		return self.color_count(color) #int, number of cards built of that color
+		return self.color_count[color] #int, number of cards built of that color
 	
-	def add_resource(self, resource, amount):
+	def add_resource(self, resource, amount=1):
 		self.resources[resource] += amount
 
 	def add_conditional_resource(self,conditional_resource):
@@ -92,23 +92,26 @@ class Player:
 	def add_points(self,category,amount):
 		self.points[category] += amount
 		
+	
 	#For coins only, points are at the end
 	#Bazar and Vineyard (that use this) should be put at the end of queue when played	
 	def add_coins_per_card(self,amount,card_color,me=True,east=False,west=False):
 		if me:
-			self.resources[POINTS_GOLD] += amount * self.get_color_count(card_color) 
+			self.resources[RESOURCE_GOLD] += amount * self.get_color_count(card_color) 
 		if east:
-			self.resources[POINTS_GOLD] += amount * self.east_player.get_color_count(card_color)
+			self.resources[RESOURCE_GOLD] += amount * self.east_player.get_color_count(card_color)
 		if west:
-			self.resources[POINTS_GOLD] += amount * self.west_player.get_color_count(card_color)  
+			self.resources[RESOURCE_GOLD] += amount * self.west_player.get_color_count(card_color)  
 	
+	#point_card_color = card from which points are awarded
+	#played_card_color = color/category of card build
 	def add_points_per_card(self,amount,played_card_color,point_card_color,me=True,east=False,west=False):
 		if me:
-			self.p += amount * self.get_color_count(card_color) 
+			self.points[played_card_color] += amount * self.get_color_count(point_card_color) 
 		if east:
-			self.resources[POINTS_GOLD] += amount * self.east_player.get_color_count(card_color)
+			self.points[played_card_color] += amount * self.east_player.get_color_count(point_card_color)
 		if west:
-			self.resources[POINTS_GOLD] += amount * self.west_player.get_color_count(card_color)
+			self.points[played_card_color] += amount * self.west_player.get_color_count(point_card_color)
 
 	def lower_trading_cost(self,trade_type):
 		if trade_type == "east": #east brown cards
@@ -124,6 +127,15 @@ class Player:
 	def add_science(self, symbol):
 		self.science[symbol]+=1 #"any" for a conditional science card/wonder"
 
+	def add_endgame_function(self,function):
+		self.endgame_scoring_functions.append(function)
+
+	def shipowners_guild(self):
+		self.add_endgame_function(self.add_points_per_card(1,POINTS_PURPLE,COLOR_BROWN))
+		self.add_endgame_function(self.add_points_per_card(1,POINTS_PURPLE,COLOR_GREY))
+		self.add_endgame_function(self.add_points_per_card(1,POINTS_PURPLE,COLOR_PURPLE))
+
+	
 	def play_hand(self, hand, west_player, east_player):
 		''' return the card and action done'''
 		options = []

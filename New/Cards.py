@@ -24,20 +24,21 @@ class Card:
 		self.cost = cost
 		self.build = effect
 
-c = Card("test","red",[0,0,0,1,0,0,0],lambda player: player.add_resource(RESOURCE_WOOD,1))
+#c = Card("test","red",[0,0,0,1,0,0,0],lambda player: player.add_resource(RESOURCE_WOOD,1))
+player = Player("Jakob")
 
 #TODO Implement pre and post chains
-#TODO Convert java cards to python
 #TODO test functionality of every card
+#TODO Make cards that give coins go to end of queue
 #Card(id,name,color,age,cost,function)
 #{coins,wood,stone,bricks,ore,glass,papyrus,textile}
 #AGE 1 CARDS
 
 #Age 1 Brown cards
-c1 =   Card(1,"Lumber Yard",COLOR_BROWN,1,None,lambda p : p.add_resource(RESOURCE_WOOD,1))  #wood
-c2 =   Card(2,"Stone Pit",COLOR_BROWN,1,None,lambda p : p.add_resource(RESOURCE_STONE,1))  #stone
-c3 =   Card(3,"Clay Pool",COLOR_BROWN,1,None,lambda p : p.add_resource(RESOURCE_BRICK,1))  #bricks
-c4 =   Card(4,"Ore Vein",COLOR_BROWN,1,None,lambda p : p.add_resource(RESOURCE_ORE,1))  #ore
+c1 =   Card(1,"Lumber Yard",COLOR_BROWN,1,None,lambda p : p.add_resource(RESOURCE_WOOD))  #wood
+c2 =   Card(2,"Stone Pit",COLOR_BROWN,1,None,lambda p : p.add_resource(RESOURCE_STONE))  #stone
+c3 =   Card(3,"Clay Pool",COLOR_BROWN,1,None,lambda p : p.add_resource(RESOURCE_BRICK))  #bricks
+c4 =   Card(4,"Ore Vein",COLOR_BROWN,1,None,lambda p : p.add_resource(RESOURCE_ORE))  #ore
 c5 =   Card(5,"Tree Farm",COLOR_BROWN,1,[RESOURCE_GOLD],lambda p : p.add_conditional_resource((RESOURCE_WOOD,RESOURCE_BRICK))) # wood\bricks
 c6 =   Card(6,"Excavation",COLOR_BROWN,1,[RESOURCE_GOLD],lambda p : p.add_conditional_resource((RESOURCE_STONE,RESOURCE_BRICK)))  # stone\bricks
 c7 =   Card(7,"Clay_Pit",COLOR_BROWN,1,[RESOURCE_GOLD],lambda p : p.add_conditional_resource((RESOURCE_ORE,RESOURCE_BRICK)))  # ore\bricks
@@ -46,9 +47,9 @@ c9 =   Card(9,"Forest Cave",COLOR_BROWN,1,[RESOURCE_GOLD],lambda p : p.add_condi
 c10 =   Card(10,"Mine",COLOR_BROWN,1,[RESOURCE_GOLD],lambda p : p.add_conditional_resource((RESOURCE_STONE,RESOURCE_ORE)))  # stone\ore
 
  #Age 1 Grey cards
-c11 =   Card(11,"Glassworks",COLOR_GREY,1,None,lambda p : p.add_resource(RESOURCE_GLASS,1))  #glass
-c12 =   Card(12,"Press",COLOR_GREY,1,None,lambda p : p.add_resource(RESOURCE_PAPYRUS,1))  #papyrus
-c13 =   Card(13,"Loom",COLOR_GREY,1,None,lambda p : p.add_resource(RESOURCE_LOOM,1))  #loom
+c11 =   Card(11,"Glassworks",COLOR_GREY,1,None,lambda p : p.add_resource(RESOURCE_GLASS))  #glass
+c12 =   Card(12,"Press",COLOR_GREY,1,None,lambda p : p.add_resource(RESOURCE_PAPYRUS))  #papyrus
+c13 =   Card(13,"Loom",COLOR_GREY,1,None,lambda p : p.add_resource(RESOURCE_LOOM))  #loom
 
  #Age 1 Blue cards
 c14 = Card(14,"Pawnshop",COLOR_BLUE,1,None,lambda p : p.add_points(POINTS_BLUE,3))  #3 blue points
@@ -81,9 +82,9 @@ c30 = Card(30,"Brickyard",COLOR_BROWN,2,[RESOURCE_GOLD],lambda p : p.add_resourc
 c31 = Card(31,"Foundry",COLOR_BROWN,2,[RESOURCE_GOLD],lambda p : p.add_resource(RESOURCE_ORE,2))  #2 ore
 
  #Age 2 Grey cards
-c32 = Card(32,"Glassworks",COLOR_GREY,2,None,lambda p : p.add_resource(RESOURCE_GLASS,1))  #glass
-c33 = Card(33,"Press",COLOR_GREY,2,None,lambda p : p.add_resource(RESOURCE_PAPYRUS,1))  #papyrus
-c34 = Card(34,"Loom",COLOR_GREY,2,None,lambda p : p.add_resource(RESOURCE_LOOM,1))  #loom
+c32 = Card(32,"Glassworks",COLOR_GREY,2,None,lambda p : p.add_resource(RESOURCE_GLASS))  #glass
+c33 = Card(33,"Press",COLOR_GREY,2,None,lambda p : p.add_resource(RESOURCE_PAPYRUS))  #papyrus
+c34 = Card(34,"Loom",COLOR_GREY,2,None,lambda p : p.add_resource(RESOURCE_LOOM))  #loom
 
  #Age 2 Blue cards
 c35 = Card(35,"Statue",COLOR_BLUE,2,[RESOURCE_WOOD,RESOURCE_ORE,RESOURCE_ORE],lambda p : p.add_points(POINTS_BLUE,4))  #4 Blue Points
@@ -120,65 +121,43 @@ c54 = Card(54,"Palace",COLOR_BLUE,3,[RESOURCE_STONE,RESOURCE_ORE,RESOURCE_WOOD,R
 c55 = Card(55,"Senate",COLOR_BLUE,3,[RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_STONE,RESOURCE_ORE],lambda p : p.add_points(POINTS_BLUE,6))  #6 Blue Points
 
  #Age 3 Yellow cards
-c56 = Card(56,"Lighthouse",COLOR_YELLOW,  int[] {0,0,1,0,0,1,0,0},3,(Player p )->{
-		p.addResource(0, p.getCountColor(3))  #Add coins = number of previous yellow cards
-		p.addConditionalPointsToUpdate(  #Add points = number of previous yellow cards
-			(Player q)-> {q.addYellowPoints(q.getCountColor(3))})}) 
-c57 = Card(57,"Haven",COLOR_YELLOW,  int[] {0,1,0,0,1,0,0,1},3,(Player p )->{
-		p.addResource(0, p.getCountColor(0))  #Add coins = number of previous brown cards
-		p.addConditionalPointsToUpdate(  #Add points = number of previous brown cards
-			(Player q)-> {q.addYellowPoints(q.getCountColor(0))})}) 
-c58 = Card(58,"Chamber of Commerce",COLOR_YELLOW,  int[] {0,0,0,2,0,0,1,0},3,(Player p )->{
-		p.addResource(0, 2*p.getCountColor(1))  #Add coins = 2x number of previous grey cards
-		p.addConditionalPointsToUpdate(  #Add points = 2x number of previous grey cards
-			(Player q)-> {q.addYellowPoints(2*q.getCountColor(1))})}) 
-c59 = Card(59,"Arena",COLOR_YELLOW,  int[] {0,0,2,0,1,0,0,0},3,(Player p )->{
-		p.addResource(0, 3*p.getWonderBoard().getWondersCompleted())  #Add coins = 3x number of completed wonders
-		p.addConditionalPointsToUpdate(  #Add points = number of completed wonders
-			(Player q)-> {q.addYellowPoints(p.getWonderBoard().getWondersCompleted())})})
+c56 = Card(56,"Lighthouse",COLOR_YELLOW,3,[RESOURCE_STONE,RESOURCE_GLASS],lambda p : p.add_endgame_function(lambda p: p.add_points_per_card(1,POINTS_YELLOW,COLOR_YELLOW))) #Add points = number of yellow cards (end of game) 
+c56.effect_2 = lambda p : p.add_coins_per_card(1,COLOR_YELLOW) #Add coins = number of previous yellow cards (the lighthouse counts)
+
+c57 = Card(57,"Haven",COLOR_YELLOW,3,[RESOURCE_WOOD,RESOURCE_ORE,RESOURCE_LOOM],lambda p : p.add_endgame_function(lambda p: p.add_points_per_card(1,POINTS_YELLOW,COLOR_BROWN))) #Add points = number of brown cards (end of game) 
+c57.effect_2 = lambda p : p.add_coins_per_card(1,COLOR_BROWN) #Add coins = number of previous brown cards 
+
+c58 = Card(58,"Chamber of Commerce",COLOR_YELLOW,3,[RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_PAPYRUS],lambda p : p.add_endgame_function(lambda p: p.add_points_per_card(2,POINTS_YELLOW,COLOR_GREY))) #Add points = number of grey cards (end of game) 
+c58.effect_2 = lambda p : p.add_coins_per_card(2,COLOR_GREY) #Add coins = number of previous grey cards 
+
+#TODO Make wonders work for this one
+c59 = Card(57,"Haven",COLOR_YELLOW,3,[RESOURCE_STONE,RESOURCE_STONE,RESOURCE_ORE],lambda p : p.add_endgame_function(lambda p: p.add_points_per_card(1,POINTS_YELLOW,"WONDER"))) #Add points = number of wonders (end of game) 
+c59.effect_2 = lambda p : p.add_coins_per_card(3,"WONDER") #Add coins = number of previous
 
 #Age 3 Red cards
-c60 = Card(60,"Fortifications",COLOR_RED,  int[] {0,0,1,0,3,0,0,0},3,(Player p)->p.addShields(3))
-c61 = Card(61,"Circus",COLOR_RED,  int[] {0,0,3,0,1,0,0,0},3,(Player p)->p.addShields(3))
-c62 = Card(62,"Arsenal",COLOR_RED,  int[] {0,2,0,0,1,0,0,1},3,(Player p)->p.addShields(3))
-c63 = Card(63,"Siege Workshop",COLOR_RED,  int[] {0,1,0,3,0,0,0,0},3,(Player p)->p.addShields(3))
+c60 = Card(60,"Fortifications",COLOR_RED,3,[RESOURCE_ORE,RESOURCE_ORE,RESOURCE_ORE,RESOURCE_STONE],lambda p : p.add_shields(3))
+c61 = Card(61,"Circus",COLOR_RED,3,[RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE,RESOURCE_ORE],lambda p : p.add_shields(3))
+c62 = Card(62,"Arsenal",COLOR_RED,3,[RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_ORE,RESOURCE_LOOM],lambda p : p.add_shields(3))
+c63 = Card(63,"Siege Workshop",COLOR_RED,3,[RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_WOOD],lambda p : p.add_shields(3))
 
 #Age 3 Green cards
-c64 = Card(64,"Lodge",COLOR_GREEN,  int[] {0,0,0,2,0,0,1,1},3,(Player p)->p.addScience(0))  #compass
-c65 = Card(65,"Academy",COLOR_GREEN,  int[]{0,0,3,0,0,1,0,0},3,(Player p)->p.addScience(0))  #compass
-c66 = Card(66,"Observatory",COLOR_GREEN,  int[]{0,0,0,0,2,1,0,1},3,(Player p)->p.addScience(1))  #gear
-c67 = Card(67,"Study",COLOR_GREEN,  int[]{0,1,0,0,0,1,0,1},3,(Player p)->p.addScience(1))  #gear
-c68 = Card(68,"University",COLOR_GREEN,  int[] {0,2,0,0,0,1,1,0},3,(Player p)->p.addScience(2))  #tablet
+c64 = Card(64,"Lodge",COLOR_GREEN,3,[RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_PAPYRUS,RESOURCE_LOOM],lambda p : p.add_science(SCIENCE_COMPASS))  #compass
+c65 = Card(65,"Academy",COLOR_GREEN,3,[RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE,RESOURCE_GLASS],lambda p : p.add_science(SCIENCE_COMPASS))  #compass
+c66 = Card(66,"Observatory",COLOR_GREEN,3,[RESOURCE_ORE,RESOURCE_ORE,RESOURCE_GLASS,RESOURCE_LOOM],lambda p : p.add_science(SCIENCE_GEAR))  #gear
+c67 = Card(67,"Study",COLOR_GREEN,3,[RESOURCE_WOOD,RESOURCE_PAPYRUS,RESOURCE_LOOM],lambda p : p.add_science(SCIENCE_GEAR))  #gear
+c68 = Card(68,"University",COLOR_GREEN,3,[RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_PAPYRUS,RESOURCE_GLASS],lambda p : p.add_science(SCIENCE_TABLET))  #tablet
 
 #Age 3 purple cards
-c69 = Card(69,"Workers Guild",COLOR_PURPLE,  int[] {0,1,1,1,2,0,0,0},3,(Player p )->{
-		p.addConditionalPointsToUpdate(  #Add points = number of brown cards of neighbors
-			(Player q)-> {q.addPurplePoints(q.getLeftPlayer().getCountColor(0)+q.getRightPlayer().getCountColor(0))})}) 
-c70 = Card(70,"Craftmens Guild",COLOR_PURPLE,  int[] {0,0,2,0,2,0,0,0},3,(Player p )->{
-		p.addConditionalPointsToUpdate(  #Add points = 2x number of grey cards of neighbors
-			(Player q)-> {q.addPurplePoints(2*(q.getLeftPlayer().getCountColor(1)+q.getRightPlayer().getCountColor(1)))})})
-c71 = Card(71,"Magistrates Guild",COLOR_PURPLE,  int[] {0,3,1,0,0,0,0,1},3,(Player p )->{
-		p.addConditionalPointsToUpdate(  #Add points = number of blue cards of neighbors
-			(Player q)-> {q.addPurplePoints(q.getLeftPlayer().getCountColor(2)+q.getRightPlayer().getCountColor(2))})}) 
-c72 = Card(72,"Traders Guild",COLOR_PURPLE,  int[] {0,0,0,0,0,1,1,1},3,(Player p )->{
-		p.addConditionalPointsToUpdate(  #Add points = number of yellow cards of neighbors
-			(Player q)-> {q.addPurplePoints(q.getLeftPlayer().getCountColor(3)+q.getRightPlayer().getCountColor(3))})}) 
-c73 = Card(73,"Builders Guild",COLOR_PURPLE,  int[] {0,0,2,2,0,1,0,0},3,(Player p )->{
-		p.addConditionalPointsToUpdate(  #Add points = number of completed wonders of player and neighbors
-			(Player q)-> {q.addPurplePoints(q.getLeftPlayer().getWonderBoard().getWondersCompleted()
-					+q.getRightPlayer().getWonderBoard().getWondersCompleted()
-					+q.getWonderBoard().getWondersCompleted())})}) 
-Card c74 =   Card(74,"Spies Guild",COLOR_PURPLE,  int[] {0,0,0,3,0,1,0,0},3,(Player p )->{
-		p.addConditionalPointsToUpdate(  #Add points = number of red cards of neighbors
-			(Player q)-> {q.addPurplePoints(q.getLeftPlayer().getCountColor(4)+q.getRightPlayer().getCountColor(4))})}) 
-Card c75 =   Card(75,"Philosophers Guild",COLOR_PURPLE,  int[] {0,0,0,3,0,0,1,1},3,(Player p )->{
-		p.addConditionalPointsToUpdate(  #Add points = number of green cards of neighbors
-			(Player q)-> {q.addPurplePoints(q.getLeftPlayer().getCountColor(5)+q.getRightPlayer().getCountColor(5))})}) 
-Card c76 =   Card(76,"Strategists Guild",COLOR_PURPLE,  int[] {0,0,1,0,2,0,0,1},3,(Player p )->{
-		p.addConditionalPointsToUpdate(  #Add points = number of Minus Tokens of neighbors
-			(Player q)-> {q.addPurplePoints(q.getLeftPlayer().getNumberMinusTokens()+q.getRightPlayer().getNumberMinusTokens())})}) 
-Card c77 =   Card(77,"Scientists Guild",COLOR_PURPLE,  int[] {0,2,0,0,2,0,1,0},3,(Player p)->p.addScience(3))  #Conditional science
-Card c78 =   Card(78,"Shipowners Guild",COLOR_PURPLE,  int[] {0,3,0,0,0,1,1,0},3,(Player p )->{
-		p.addConditionalPointsToUpdate(  #Add points = number of brown, grey and purple cards owned
-			(Player q)-> {q.addPurplePoints(q.getCountColor(0)+q.getCountColor(1)+q.getCountColor(6))})})
+c69 = Card(69,"Workers Guild",COLOR_PURPLE,3,[RESOURCE_ORE,RESOURCE_ORE,RESOURCE_BRICK,RESOURCE_STONE,RESOURCE_WOOD],lambda p : p.add_endgame_function(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_BROWN,False,True,True))) 
+c70 = Card(70,"Craftmens Guild",COLOR_PURPLE,3,[RESOURCE_ORE,RESOURCE_ORE,RESOURCE_STONE,RESOURCE_STONE],lambda p : p.add_endgame_function(lambda p : p.add_points_per_card(2,POINTS_PURPLE,COLOR_GREY,False,True,True)))
+c71 = Card(71,"Magistrates Guild",COLOR_PURPLE,3,[RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_STONE,RESOURCE_LOOM],lambda p : p.add_endgame_function(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_BLUE,False,True,True))) 
+c72 = Card(72,"Traders Guild",COLOR_PURPLE,3,[RESOURCE_GLASS,RESOURCE_LOOM,RESOURCE_PAPYRUS],lambda p : p.add_endgame_function(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_YELLOW,False,True,True))) 
 
+#TODO make work with wonders 
+c73 = Card(73,"Builders Guild",COLOR_PURPLE,3,[RESOURCE_STONE,RESOURCE_STONE,RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_GLASS],lambda p : p.add_endgame_function(lambda p : p.add_points_per_card(1,POINTS_PURPLE,"WONDER",True,True,True)))
+
+c74 =   Card(74,"Spies Guild",COLOR_PURPLE,3,[RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_GLASS],lambda p : p.add_endgame_function(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_RED,False,True,True))) 
+c75 =   Card(75,"Philosophers Guild",COLOR_PURPLE,[RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_PAPYRUS,RESOURCE_LOOM],lambda p : p.add_endgame_function(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_GREEN,False,True,True))) 
+c76 =   Card(76,"Strategists Guild",COLOR_PURPLE,[RESOURCE_ORE,RESOURCE_ORE,RESOURCE_STONE,RESOURCE_LOOM],lambda p : p.add_endgame_function(lambda p : p.add_points(POINTS_RED,p.west_player.war_losses+p.east_player.war_losses)))
+c77 =   Card(77,"Scientists Guild",COLOR_PURPLE,[RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_ORE,RESOURCE_ORE,RESOURCE_PAPYRUS],lambda p : p.add_science("any"))  #Conditional science
+c78 =   Card(78,"Shipowners Guild",COLOR_PURPLE,[RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_GLASS,RESOURCE_PAPYRUS],lambda p : p.shipowners_guild())
