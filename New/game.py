@@ -11,8 +11,9 @@ card_hands = []
 
 def main():
     #TODO
-    players_setup() #Includes wonder setup
     cards_setup()
+    players_setup() #Includes wonder setup
+    
 
     for age in range(1,4):
             for turn in range(6):
