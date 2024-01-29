@@ -1,0 +1,3 @@
+Olympia A wonder removed (too complicated for AI).
+
+Cost involving buying other players returns lowest overall cost (even though normaly you can choose).

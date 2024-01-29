@@ -84,6 +84,7 @@ c38 = Card(38,"Courthouse",COLOR_BLUE,2,[RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_
  #Age 2 Yellow cards
 c39 = Card(39,"Caravansery",COLOR_YELLOW,2,[RESOURCE_WOOD,RESOURCE_WOOD],lambda p : p.add_free_conditional_resource(COLOR_BROWN)) #Brown resources composition
 c40 = Card(40,"Forum",COLOR_YELLOW,2,[RESOURCE_BRICK,RESOURCE_BRICK],lambda p : p.add_free_conditional_resource(COLOR_GREY))  #Grey ressources composition
+
 #TODO make these go to end of queue
 c41 = Card(41,"Vineyard",COLOR_YELLOW,2,None,lambda p : p.add_coins_per_card(1,COLOR_BROWN,True,True,True))  #Add coins = brown cards of you and neighbors
 c42 = Card(42,"Bazar",COLOR_YELLOW,2,None,lambda p : p.add_coins_per_card(2,COLOR_GREY,True,True,True)) #Add coins = 2 x grey cards of you and neighbors

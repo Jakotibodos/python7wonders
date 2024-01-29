@@ -25,7 +25,7 @@ def main():
                     else:
                         discard_card()
 
-                for effect in queue: #For cards that give coins depending on card counts
+                for effect in queue: #For cards that give coins depending on card counts (and Halikarnassos discard play)
                     effect() #maybe these will be (effect,player) in queue
                 queue = []
                 
@@ -33,7 +33,7 @@ def main():
 
             #Free discard wonder
             for player in players:
-                if player.has_free_discard>0:
+                if player.get_free_discards>0:
                     play_turn()
             for effect in queue: #For cards that give coins depending on card counts
                 effect() #maybe these will be (effect,player) in queue

@@ -66,6 +66,9 @@ class Player:
 			COLOR_GREEN:0,
 			COLOR_PURPLE:0
 		}
+		#If True, player can play the last card of an age instead of discarding it
+		#Still has to pay cost (can also use it to complete wonder or discard for 3 coins)
+		self.double_last_cards = False 
 		self.endgame_scoring_functions = [] #For cards that give points at the end of the game
 	
 	def set_personality(self, persona):
@@ -135,6 +138,8 @@ class Player:
 		self.add_endgame_function(self.add_points_per_card(1,POINTS_PURPLE,COLOR_GREY))
 		self.add_endgame_function(self.add_points_per_card(1,POINTS_PURPLE,COLOR_PURPLE))
 
+	def can_double_last_cards(self):
+		self.double_last_cards = True
 	
 	def play_hand(self, hand, west_player, east_player):
 		''' return the card and action done'''
