@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright 2015 - Jakob Cordua Thibodeau
+# Copyright 2024 - Jakob Cordua Thibodeau
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,6 +18,7 @@ class Player:
 	def __init__(self, name):
 		self.name = name
 		self.tableau = [] # all the players played cards
+		self.hand
 		self.war_losses = 0 # war wins/losses
 		self.shields = 0 #Shield/military points
 		self.resources = { #This only counts fixed ressources
@@ -69,11 +70,21 @@ class Player:
 		#If True, player can play the last card of an age instead of discarding it
 		#Still has to pay cost (can also use it to complete wonder or discard for 3 coins)
 		self.double_last_cards = False 
+
 		self.endgame_scoring_functions = [] #For cards that give points at the end of the game
 	
 	def set_personality(self, persona):
 		self.personality = persona
 	
+	def set_wonder(self,wonder):
+		self.wonder = wonder
+	
+	def set_east_player(self,east_player):
+		self.east_player = east_player
+	
+	def set_west_player(self,west_player):
+		self.west_player = west_player
+
 	def get_name(self):
 		return self.name
 	
