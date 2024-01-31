@@ -54,13 +54,22 @@ COLOR_GREEN 	= "green"
 COLOR_BLUE 		= "blue"
 COLOR_RED 		= "red"
 COLOR_PURPLE 	= "purple"
+COLOR_WONDER = "wonder"
 
 INFOPREFIX_TRADE = "trade"
 INFOPREFIX_PROVIDER = "+"
 
-
-def sort_cards(cards, reverse=False):
-	return sorted(cards, key=lambda x: x.get_name(), reverse=reverse)
+ANSI = {
+	COLOR_BROWN : "\033[33m",	
+	COLOR_GREY : "\033[37m",
+	COLOR_YELLOW : "\033[93m",
+	COLOR_GREEN : "\033[92m",
+	COLOR_BLUE 	: "\033[94m",
+	COLOR_RED : "\033[91m",
+	COLOR_PURPLE : "\033[95m",
+	COLOR_WONDER : "\033[96m",
+	"default" : "\033[0m"
+}
 
 
 def find_card(cards, name):

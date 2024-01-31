@@ -18,7 +18,7 @@ class Player:
 	def __init__(self, name):
 		self.name = name
 		self.tableau = [] # all the players played cards
-		self.hand
+		self.hand = None
 		self.war_losses = 0 # war wins/losses
 		self.shields = 0 #Shield/military points
 		self.resources = { #This only counts fixed ressources
@@ -110,6 +110,9 @@ class Player:
 	#For coins only, points are at the end
 	#Bazar and Vineyard (that use this) should be put at the end of queue when played	
 	def add_coins_per_card(self,amount,card_color,me=True,east=False,west=False):
+		if card_color == "wonder":
+			self.resources[RESOURCE_GOLD] += amount * self.wonder.stages_completed
+			return
 		if me:
 			self.resources[RESOURCE_GOLD] += amount * self.get_color_count(card_color) 
 		if east:
@@ -126,6 +129,14 @@ class Player:
 			self.points[played_card_color] += amount * self.east_player.get_color_count(point_card_color)
 		if west:
 			self.points[played_card_color] += amount * self.west_player.get_color_count(point_card_color)
+
+	def add_points_per_wonder(self,amount,played_card_color,me=True,east=False,west=False):
+		if me:
+			self.points[played_card_color] += amount * self.wonder.stages_completed
+		if east:
+			self.points[played_card_color] += amount * self.east_player.wonder.stages_completed
+		if west:
+			self.points[played_card_color] += amount * self.west_player.wonder.stages_completed
 
 	def lower_trading_cost(self,trade_type):
 		if trade_type == "east": #east brown cards
@@ -151,7 +162,23 @@ class Player:
 
 	def can_double_last_cards(self):
 		self.double_last_cards = True
-	
+
+	def get_total_score(self):
+		return sum(self.points.values())
+
+	def print_score(self):
+		print(f"{self.name}'s score breakdown:")
+		print("-------------------------------")
+		print(f"{ANSI[COLOR_RED]}War Points: {self.points[POINTS_RED]} pts")
+		print(f"{ANSI[COLOR_BROWN]}Gold Points: {self.points[POINTS_GOLD]} pts")
+		print(f"{ANSI[COLOR_WONDER]}Wonder Points: {self.points[POINTS_WONDER]} pts")
+		print(f"{ANSI[COLOR_BLUE]}Blue Points: {self.points[POINTS_BLUE]} pts")
+		print(f"{ANSI[COLOR_YELLOW]}Yellow Points: {self.points[POINTS_YELLOW]} pts")
+		print(f"{ANSI[COLOR_PURPLE]}Purple Points: {self.points[POINTS_PURPLE]} pts")
+		print(f"{ANSI[COLOR_GREEN]}Green Points: {self.points[POINTS_GREEN]} pts")
+		print(f"{ANSI['default']}-------------------------------")
+		print(f"Total: {self.get_total_score()} pts")
+
 	def play_hand(self, hand, west_player, east_player):
 		''' return the card and action done'''
 		options = []

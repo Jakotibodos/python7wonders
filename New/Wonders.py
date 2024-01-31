@@ -1,7 +1,6 @@
 from Players import Player
 from common import *
-import deque
-
+from game import add_effect_to_queue
 
 class Wonder_Stage:
 	
@@ -20,7 +19,7 @@ class Wonder:
 		self.name = name
 		self.side = side #"A" or "B"
 		self.stages_completed = 0
-		self.stages = deque()
+		self.stages = []
 		
 		if name == "Alexandria":
 			self.setup_Alexandria(player)
@@ -98,18 +97,15 @@ class Wonder:
 		if self.side == "A":
 			self.id = 9
 			self.stages.append(Wonder_Stage([RESOURCE_BRICK,RESOURCE_BRICK],lambda p : p.add_points(POINTS_WONDER,3)))
-			#TODO make work with queue
-			self.stages.append(Wonder_Stage([RESOURCE_ORE,RESOURCE_ORE,RESOURCE_ORE],lambda p : p.play_card_from_discard()))
+			self.stages.append(Wonder_Stage([RESOURCE_ORE,RESOURCE_ORE,RESOURCE_ORE],lambda p : add_effect_to_queue(p,"Halikarnassos")))
 			self.stages.append(Wonder_Stage([RESOURCE_LOOM,RESOURCE_LOOM],lambda p : p.add_points(POINTS_WONDER,7)))
 			
 		else: #side == "B"
+			
 			self.id = 10
-			#TODO make work with queue
-			self.stages.append(Wonder_Stage([RESOURCE_ORE,RESOURCE_ORE],lambda p : p.play_card_from_discard())) #TODO 2 coins
-			#TODO make work with queue
-			self.stages.append(Wonder_Stage([RESOURCE_BRICK,RESOURCE_BRICK],lambda p : p.play_card_from_discard())) #TODO 1 coin
-			#TODO make work with queue
-			self.stages.append(Wonder_Stage([RESOURCE_PAPYRUS,RESOURCE_LOOM,RESOURCE_GLASS],lambda p : p.play_card_from_discard()))
+			self.stages.append(Wonder_Stage([RESOURCE_ORE,RESOURCE_ORE],lambda p : add_effect_to_queue(p,"Halikarnassos")))
+			self.stages.append(Wonder_Stage([RESOURCE_BRICK,RESOURCE_BRICK],lambda p : add_effect_to_queue(p,"Halikarnassos")))
+			self.stages.append(Wonder_Stage([RESOURCE_PAPYRUS,RESOURCE_LOOM,RESOURCE_GLASS],lambda p : add_effect_to_queue(p,"Halikarnassos")))
 
 	def setup_Rhodos(self,player):
 		player.add_resource(RESOURCE_PAPYRUS)
