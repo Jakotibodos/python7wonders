@@ -19,6 +19,8 @@ class Card:
 	def __repr__(self) -> str:
 		return f"{ANSI[self.color]}{self.name}\033[0m"
 	
+	def get_cost(self):
+		return self.cost
 	
 #c = Card("test","red",[0,0,0,1,0,0,0],lambda player: player.add_resource(RESOURCE_WOOD,1))
 player = Player("Jakob")

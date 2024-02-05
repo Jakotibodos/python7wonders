@@ -53,7 +53,7 @@ def discard_last_card(player):
     discard_pile.append(player.hand.pop())
 
 def play_turn(player):
-    show_available_cards()
+    player.show_available_cards() #TODO
     card = select_card(player) #Add card count at this stage
     card.effect(player)
     if hasattr(card,"effect_2"): #For cards that give coins depending on card counts
@@ -149,4 +149,5 @@ def players_setup(player_count = 3): #max 6
 
 
 if __name__ == "__main__":
+    
     main()

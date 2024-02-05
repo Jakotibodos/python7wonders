@@ -12,7 +12,8 @@
 
 from collections import deque
 from common import *
-
+from itertools import product
+from random import choice
 
 class Player:
 	def __init__(self, name):
@@ -179,197 +180,179 @@ class Player:
 		print(f"{ANSI['default']}-------------------------------")
 		print(f"Total: {self.get_total_score()} pts")
 
-	def play_hand(self, hand, west_player, east_player):
-		''' return the card and action done'''
-		options = []
-		for card in hand:
-			#print card.get_name(), self.is_card_in_tableau(card)
-			if not self.is_card_in_tableau(card): #cannot play 2 cards with same name
-				if self.can_build_with_chain(card): #can build free card
-					options.append((ACTION_PLAYCARD, card))
-				elif self.buy_card(card, west_player, east_player):
-					options.append((ACTION_PLAYCARD, card))
-			options.append((ACTION_DISCARD, card)) #Every card can be discarded for 3 coins
+	def show_available_cards(self):
+		cost = []
+		for card in self.hand:
+			cost.append(get_cost(card))
 
-			#TODO
-			#Make wonder first option
-			if False:#self.wonder.built_stages < 3: #FIXMEself.wonder.stages:
-				options.append((ACTION_STAGEWONDER, card))
-		i = 0
-		print("-=================-")
-		
-		#TODO make wonder first option
-		options = sorted(options, key=lambda x: {CARDS_GREY:0, CARDS_BROWN:1, CARDS_YELLOW:2, CARDS_BLUE:3, CARDS_RED:4, CARDS_GREEN:5, CARDS_PURPLE:6}[x[1].get_colour()])
-		for o in options:
-			actions = { ACTION_PLAYCARD:"Play", ACTION_DISCARD:"Discard", ACTION_STAGEWONDER:"Stage" }
-			card = o[1]
-			print("[%d]: %s\t%s\t%s" % (i, actions[o[0]], card.get_cost_as_string(), card.pretty_print_name()))
-			i += 1
-		print("-=================-")
-
-		return options[self.personality.make_choice(options)]
+		#TODO
+			
+		return 
 	
-	def print_tableau(self):
-		cards = { CARDS_BROWN:[], CARDS_GREY:[], CARDS_YELLOW:[], CARDS_BLUE:[], CARDS_RED:[], CARDS_GREEN:[], CARDS_PURPLE:[] }
-		print("You have $%d" % (self.money))
-		#print("War points: %s" % (self.military)) #Change to 
-		print(self.west_trade_prices)
-		print(self.east_trade_prices)
-		for c in self.get_cards():
-			cards[c.get_colour()].append(c)
+
+	
+
+#returns the cost in gold of buying this card
+	#if 0, the card is free
+	#if 1, card costs 1 TO THE BANK
+	#if -1 the card cannot be bought (won't be available)
+	#if [w,e] w is amount paid to west player and e to east player
+
+	def get_price(self,card):
+		possible_prices = []
+		#TODO 
+		if is_free_prechains():
+			return 0
+
+		cost = card.get_cost()
+	
+		#If the card is free, price is 0
+		if cost is None:
+			return 0
 		
-		biggest_deck = 0
-		for colour in cards.keys():
-			count =  len(cards[colour])
-			if count > biggest_deck:
-				biggest_deck = count
-		for i in range(biggest_deck):
-			line = { CARDS_BROWN:"\t", CARDS_GREY:"\t", CARDS_YELLOW:"\t", CARDS_BLUE:"\t", CARDS_RED:"\t", CARDS_GREEN:"\t", CARDS_PURPLE:"\t" }
-			for colour in [CARDS_BROWN, CARDS_GREY, CARDS_YELLOW, CARDS_BLUE, CARDS_RED, CARDS_GREEN, CARDS_PURPLE]:
-				if len(cards[colour]) > biggest_deck - 1 - i:
-					line[colour] = "%s" % (cards[colour][biggest_deck - 1 - i].pretty_print_name())
+		#If the card costs 1 gold, can either afford it (1 gold) or not (-1)
+		if cost[0] == RESOURCE_GOLD:
+			if self.resources[RESOURCE_GOLD]>0:
+				return 1
+			return -1
+		
+    	# Create a copy of the player's resources dictionary
+		available_resources = self.resources.copy()
+
+		#Seperate into brown and grey (easier for conditional resources)
+		new_cost_brown = []
+		new_cost_grey = []
+		#Go through set resources
+		for resource in cost:
+			if available_resources[resource] > 0:
+				available_resources[resource] -= 1 
+			else:
+				new_cost_brown.append(resource) if resource in BROWN_RESOURCES else new_cost_grey.append(resource)
+		
+		#If could be paid with basic resources and/or yellow conditional resources
+		if max(len(new_cost_brown)-self.free_conditional_resources[COLOR_BROWN],0)\
+		  + max(len(new_cost_grey)-self.free_conditional_resources[COLOR_GREY],0) == 0:
+			return 0
+
+		
+		if new_cost_brown == 0: #Only grey resources left and have to buy some
+			return self.buy_grey_from_neighbors(new_cost_grey)
+		
+		elif new_cost_grey == 0: #Only brown resources left 
+			for combo in list(product(*self.conditional_resources)): 
+				new_new_cost_brown = new_cost_brown.copy()
+				for resource in new_cost_brown:
+					if resource in combo:
+						combo.remove(resource) 
+					else:
+						new_new_cost_brown.append(resource)
+				if len(new_new_cost_brown) - self.free_conditional_resources[BROWN_RESOURCES] < 1:
+					return 0
 				else:
-					line[colour] = "        "
-			
-			print("%s\t%s\t%s\t%s\t%s\t%s\t%s" % ( line[CARDS_BROWN], line[CARDS_GREY], line[CARDS_YELLOW], line[CARDS_BLUE], line[CARDS_RED], line[CARDS_GREEN],line[CARDS_PURPLE]))
-		
-	
-	def set_wonder(self, wonder):
-		self.wonder = wonder
-	
-	def is_card_in_tableau(self, card):
-		return find_card(self.get_cards(), card.get_name()) != None
-
-	def can_build_with_chain(self, card):
-		for precard in card.prechains:
-			if find_card(self.get_cards(), precard):
-				return True
-		return False
-		
-	def buy_card(self, card, west_player, east_player):
-		missing = []
-		money_spent = 0
-		trade_east = 0
-		trade_west = 0
-		options = []
-		if len(card.cost) == 0:
-			return [CardPurchaseOption([], 0, [], [])]
-		for i in range(len(card.cost)):
-			cost = deque(card.cost)
-			cost.rotate(i)
-			for east_first in [True, False]:
-				x = self._find_resource_cards(list(cost), west_player.get_cards(), east_player.get_cards(), east_first)
-				if x and x not in options:
-					options.append(x)
-		# we now remove any of the options which we cant afford to pay for trades
-		legal_options = []
-		for o in options:
-			cost = o.coins
-			for c in o.east_trades:
-				o.east_cost = self.east_trade_prices[c.resource] * c.count
-				cost += o.east_cost
-			for c in o.west_trades:
-				o.west_cost = self.west_trade_prices[c.resource] * c.count
-				cost += o.west_cost
-			if cost <= self.money:
-				o.set_total(cost)
-				legal_options.append(o)
-			# Setting the total cost is buggy
-		#print sorted(legal_options, key=lambda x: x.total_cost)
-		return sorted(legal_options, key=lambda x: x.total_cost)
-
-	def _find_resource_cards(self, needed_resources, west_cards, east_cards, east_first=True):
-		def __is_card_used(card, used_cards_array):
-			for x in used_cards_array:
-				if card == x.card:
-					return True
-			return False
-		def __check_tableau(r, tableau, used_cards, tradeable_only):
-			for c in tableau: # FIXME: WONDER too
-				if not __is_card_used(c, used_cards):
-					is_resource, tradeable = c.is_resource_card()
-					if is_resource and ((not tradeable_only) or (tradeable_only == tradeable)):
-						count = c.provides_resource(r)
-						if count == 0:
-							continue
-						return (c, count)
-			return (None, 0)
-
-		used_cards = []
-		coins = 0
-		east_trades = []
-		west_trades = []
-		card_sets = [(self.get_cards(), used_cards, False)]
-		if east_first:
-			card_sets += [(east_cards, east_trades, True), (west_cards, west_trades, True)]
+					price = buy_brown_from_neighbors(new_new_cost_brown)
+					if price == {'east':self.east_trade_prices,'west':0} or {'east':0,'west':self.west_trade_prices}: #it doesn't get better than this
+						return price
+					possible_prices.append()
 		else:
-			card_sets += [(west_cards, west_trades, True), (east_cards, east_trades, True)]
+			#Generates all combinations of conditional resources
+			for combo in list(product(*self.conditional_resources)): 
+
+				#For each combination, check if can be paid with those resources
+				new_new_cost_brown = new_cost_brown.copy()
+				for resource in new_cost_brown:
+					if resource in combo:
+						combo.remove(resource) 
+					else:
+						new_new_cost_brown.append(resource)
+
+				#Here we know there is at least one grey resource missing
+				grey_price = buy_grey_from_neighbors(new_cost_grey)
+
+				#If could be brown paid with basic resources and/or yellow conditional resources
+				if len(new_new_cost_brown) - self.free_conditional_resources[BROWN_RESOURCES] < 1:
+					return self.buy_grey_from_neighbors(new_cost_grey)
+				else:
+					
+					possible_prices.append(buy_both_from_neighbors(new_new_cost_brown,new_cost_grey))
 		
-		while len(needed_resources):
-			r = needed_resources[0]
-			found = False
-			if r == RESOURCE_MONEY:
-				coins += 1
-				needed_resources.remove(r)
-				continue
-			for cards, used, tradeable_only in card_sets:
-				card, count = __check_tableau(r, cards, used, tradeable_only)
-				if card and count > 0:
-					found = True
-					needed_count = 0
-					for i in range(0, count):
-						if r not in needed_resources:
-							break
-						needed_count += 1
-						needed_resources.remove(r)
-					used.append(CardPurchaseUse(card, r, needed_count))
-					break
-			if not found:
-				return None
-		return CardPurchaseOption(used_cards, coins, west_trades, east_trades)
-
-class CardPurchaseUse:
-	def __init__(self, card, resource, count):
-		self.card = card
-		self.resource = resource
-		self.count = count
+		#TODO
+		return min(possible_prices)
 	
-	def __eq__(self, other):
-		return self.resource == other.resource \
-			and self.count == other.count \
-			and self.card.get_name() == other.card.get_name()
-	
-	def __repr__(self):
-		if len(self.card.get_info()) == 1:
-			return "%s"% (self.card)
-		return "%s -> %s * %d" % (self.card, self.resource, self.count)
-			
-class CardPurchaseOption:
-	def __init__(self, cards, coins, west_trades, east_trades):
-		self.cards = cards
-		self.coins = coins
-		self.west_trades = west_trades
-		self.east_trades = east_trades
-		self.total_cost = 0
-		self.east_cost = 0
-		self.west_cost = 0
-	
-	def set_total(self, cost):
-		self.total_cost = cost
+	#Even for wonders that need 2 grey ressources, you'll never need to buy more than one per type
+	def buy_grey_from_neighbors(self,grey_cost):
+		both = 0
+		east_cost = 0
+		west_cost = 0
+		free_grey = self.free_conditional_resources[COLOR_GREY]
 
-	def __eq__(self, other):
-		if self.coins != other.coins:
-			return False
-		for us, them in [(self.cards, other.cards), \
-						(self.west_trades, other.west_trades), \
-						(self.east_trades, other.east_trades)]:
-			if len(us) != len(them):
-				return False
-			for x in us:
-				if x not in them:
-					return False
-				
-		return True
+		east_resources = self.east_player.resources.copy()
+		west_resources = self.west_player.resources.copy()
+		for resource in grey_cost:
+			if east_resources[resource]>0 and west_resources[resource]>0:
+				both += 1 #This is "amount of resources both have" not price
+			elif east_resources[resource]>0:
+				east_cost += self.grey_trade_prices
+			elif west_resources[resource]>0:
+				west_cost += self.grey_trade_prices
+			else:#if none of them have it
+				if free_grey > 0: #"Use" a free conditional free resource if you have any left
+					free_grey -= 1
+				else: #If nobody has the resource and you don't have any free ones, you can't buy the card
+					return -1
+		
+		#Time to use those free conditional resources if you haven't already
+		#Here you are guaranteed to have something to pay
+		both,west_cost,east_cost = self.assign_free_grey(free_grey,both,west_cost,east_cost)
 
-	def __repr__(self):
-		return "{ (total: $%d)\n\t%s\n\t$%d\n\tWEST:%s\n\tEAST:%s\n}" % (self.total_cost, self.cards, self.coins, self.west_trades, self.east_trades)
+		cost = {"east":east_cost,"west":west_cost}
+
+		if both > 1: #if 2 or 3
+			cost["west"] += self.grey_trade_prices 
+			cost["east"] += self.grey_trade_prices
+		if both%2 == 1: #if 1 or 3
+			#Give the player with the least coins more coins OR
+			#Give a random player more coins 
+			#This is a compromise for AI, could be changed later for players
+			#FIXME
+			if cost["east"] > cost['west']:
+				cost["west"] += self.grey_trade_prices
+			elif cost["east"] < cost['west']:
+				cost["west"] += self.grey_trade_prices
+			else:
+				cost[choice(["east","west"])] += self.grey_trade_prices
+
+		return cost
+
+
+	def assign_free_grey(self,free_grey,both,west_cost,east_cost):
+		#FIXME players should be able to choose
+		#Made to avoid the "both" logic later
+		#But also made to distribute equally (if [1,2,0] it will transform to [1,1,0])
+		for _ in range(free_grey):
+			if both == west_cost or both == east_cost: #[1,1,1] or [1,1,0] or [1,0,1]
+				both-=1
+			elif west_cost == east_cost: #[0,1,1]
+				if choice([True,False]):
+					west_cost -= self.grey_trade_prices
+				else:
+					east_cost -= self.grey_trade_prices
+			else:
+				max_value = max(both,west_cost,east_cost)
+				if both == max_value: 
+					both -= 1
+				elif west_cost == max_value:
+					west_cost -= self.grey_trade_prices
+				else:
+					east_cost -= self.grey_trade_prices
+
+		return both,west_cost,east_cost
+	
+
+	def buy_brown_from_neighbors(self,brown_cost):
+		both = 0
+		east_cost = 0
+		west_cost = 0
+		free_brown = self.free_conditional_resources[COLOR_BROWN]
+
+		east_resources = self.east_player.resources.copy()
+		west_resources = self.west_player.resources.copy()
