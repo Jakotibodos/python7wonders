@@ -266,14 +266,15 @@ class Player:
 						new_new_cost_brown.append(resource)
 
 				#Here we know there is at least one grey resource missing
-				grey_price = buy_grey_from_neighbors(new_cost_grey)
+				grey_price = self.buy_grey_from_neighbors(new_cost_grey)
 
 				#If could be brown paid with basic resources and/or yellow conditional resources
 				if len(new_new_cost_brown) - self.free_conditional_resources[BROWN_RESOURCES] < 1:
-					return self.buy_grey_from_neighbors(new_cost_grey)
+					return grey_price
 				else:
-					
-					possible_prices.append(buy_both_from_neighbors(new_new_cost_brown,new_cost_grey))
+					brown_price = buy_brown_from_neighbors(new_new_cost_brown) 
+					if brown_price
+					possible_prices.append()
 		
 		#TODO
 		return min(possible_prices)
