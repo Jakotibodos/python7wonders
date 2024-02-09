@@ -166,6 +166,13 @@ class Player:
 
 	def get_total_score(self):
 		return sum(self.points.values())
+	
+	def resources_as_list(self):
+		resources_list = []
+		for resource, amount in self.resources.items():
+			for _ in range(amount):
+				resources_list.append(resource)
+		return resources_list
 
 	def print_score(self):
 		print(f"{self.name}'s score breakdown:")
@@ -235,10 +242,12 @@ class Player:
 			return 0
 
 		
-		if new_cost_brown == 0: #Only grey resources left and have to buy some
+		#Buying from other people and/or using conditional resources
+
+		if len(new_cost_brown) == 0: #Only grey resources left and have to buy some
 			return self.buy_grey_from_neighbors(new_cost_grey)
 		
-		elif new_cost_grey == 0: #Only brown resources left 
+		elif len(new_cost_grey) == 0: #Only brown resources left 
 			for combo in list(product(*self.conditional_resources)): 
 				new_new_cost_brown = new_cost_brown.copy()
 				for resource in new_cost_brown:
@@ -250,9 +259,11 @@ class Player:
 					return 0
 				else:
 					price = buy_brown_from_neighbors(new_new_cost_brown)
-					if price == {'east':self.east_trade_prices,'west':0} or {'east':0,'west':self.west_trade_prices}: #it doesn't get better than this
-						return price
-					possible_prices.append()
+					if sum(price.values()) <= available_resources[RESOURCE_GOLD]: #If can afford
+						if price == {'east':self.east_trade_prices,'west':0} or {'east':0,'west':self.west_trade_prices}: #it doesn't get better than this
+							return price
+						else:
+							possible_prices.append(price)
 		else:
 			#Generates all combinations of conditional resources
 			for combo in list(product(*self.conditional_resources)): 
@@ -355,5 +366,25 @@ class Player:
 		west_cost = 0
 		free_brown = self.free_conditional_resources[COLOR_BROWN]
 
-		east_resources = self.east_player.resources.copy()
-		west_resources = self.west_player.resources.copy()
+		if self.east_trade_prices == self.west_trade_prices: #If both same price
+			
+			for east_combo in list(product(*self.east_player.conditional_resources)):
+				for west_combo in list(product(*self.west_player.conditional_resources)):
+
+					for resource in brown_cost:
+						east_has = east_resources[resource]>0 or resource in east_combo
+						west_has = west_resources[resource]>0 or resource in west_combo
+
+						if east_has or west_has:
+							both += 1 #This is "amount of resources both have" not price
+						elif east_has:
+							east_cost += self.east_trade_prices
+						elif west_has:
+							west_cost += self.west_trade_prices
+						else:#if none of them have it 
+							
+
+
+		elif self.east_trade_prices == 1 and self.west_trade_prices == 2: #If east player is cheaper
+		
+		else:	#If west player is cheaper
