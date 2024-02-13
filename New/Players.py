@@ -153,9 +153,6 @@ class Player:
 	def add_science(self, symbol):
 		self.science[symbol]+=1 #"any" for a conditional science card/wonder"
 
-	def add_endgame_function(self,function):
-		self.endgame_scoring_functions.append(function)
-
 	def shipowners_guild(self):
 		self.add_endgame_function(self.add_points_per_card(1,POINTS_PURPLE,COLOR_BROWN))
 		self.add_endgame_function(self.add_points_per_card(1,POINTS_PURPLE,COLOR_GREY))
@@ -206,9 +203,8 @@ class Player:
 	#if [w,e] w is amount paid to west player and e to east player
 
 	def get_price(self,card):
-		possible_prices = []
-		#TODO 
-		if is_free_prechains():
+		
+		if self.is_free_prechains(card):
 			return 0
 
 		cost = card.get_cost()
@@ -248,6 +244,7 @@ class Player:
 			return self.buy_grey_from_neighbors(new_cost_grey)
 		
 		elif len(new_cost_grey) == 0: #Only brown resources left 
+			possible_prices = []
 			for combo in list(product(*self.conditional_resources)): 
 				new_new_cost_brown = new_cost_brown.copy()
 				for resource in new_cost_brown:
@@ -258,13 +255,15 @@ class Player:
 				if len(new_new_cost_brown) - self.free_conditional_resources[BROWN_RESOURCES] < 1:
 					return 0
 				else:
-					price = buy_brown_from_neighbors(new_new_cost_brown)
-					if sum(price.values()) <= available_resources[RESOURCE_GOLD]: #If can afford
-						if price == {'east':self.east_trade_prices,'west':0} or {'east':0,'west':self.west_trade_prices}: #it doesn't get better than this
-							return price
-						else:
-							possible_prices.append(price)
-		else:
+					price = self.buy_brown_from_neighbors(new_new_cost_brown)
+					if price == {'east':self.east_trade_prices,'west':0} or {'east':0,'west':self.west_trade_prices}: #it doesn't get better than this
+						return price
+					elif price != -1:
+						possible_prices.append(price)
+		else: #need to buy brown and grey
+			#Here we know there is at least one grey resource missing
+			grey_price = self.buy_grey_from_neighbors(new_cost_grey)
+
 			#Generates all combinations of conditional resources
 			for combo in list(product(*self.conditional_resources)): 
 
@@ -276,19 +275,24 @@ class Player:
 					else:
 						new_new_cost_brown.append(resource)
 
-				#Here we know there is at least one grey resource missing
-				grey_price = self.buy_grey_from_neighbors(new_cost_grey)
-
 				#If could be brown paid with basic resources and/or yellow conditional resources
 				if len(new_new_cost_brown) - self.free_conditional_resources[BROWN_RESOURCES] < 1:
 					return grey_price
 				else:
-					brown_price = buy_brown_from_neighbors(new_new_cost_brown) 
-					if brown_price
-					possible_prices.append()
+					brown_price = self.buy_brown_from_neighbors(new_new_cost_brown) 
+					if brown_price == {'east':self.east_trade_prices,'west':0} or {'east':0,'west':self.west_trade_prices}: #it doesn't get better than this
+						return {'east':brown_price["east"]+grey_price["east"],'west':brown_price["west"]+grey_price["west"]} #Combine grey and brown prices
+					elif brown_price != -1:
+						possible_prices.append({'east':brown_price["east"]+grey_price["east"],'west':brown_price["west"]+grey_price["west"]}) #Combine grey and brown prices
 		
-		#TODO
-		return min(possible_prices)
+		return self.find_min_price(possible_prices)
+	
+
+	def is_free_prechains(self,card):
+		for c in card.prechains:
+			if self.tableau.contains(c):
+				return True
+		return False
 	
 	#Even for wonders that need 2 grey ressources, you'll never need to buy more than one per type
 	def buy_grey_from_neighbors(self,grey_cost):
@@ -333,8 +337,7 @@ class Player:
 			else:
 				cost[choice(["east","west"])] += self.grey_trade_prices
 
-		return cost
-
+		return cost if sum(cost.values()) <= self.resources[RESOURCE_GOLD] else -1
 
 	def assign_free_grey(self,free_grey,both,west_cost,east_cost):
 		#FIXME players should be able to choose
@@ -359,32 +362,214 @@ class Player:
 
 		return both,west_cost,east_cost
 	
-
 	def buy_brown_from_neighbors(self,brown_cost):
+		prices = []
+
+		if self.east_trade_prices == self.west_trade_prices: #If both same price	
+			prices = self.get_prices_neighbors_same(brown_cost)
+
+		elif self.east_trade_prices == 1 and self.west_trade_prices == 2: #If east player is cheaper
+			prices = self.get_prices_neighbors_east_cheaper(brown_cost)
+		
+		else:	#If west player is cheaper
+			prices = self.get_prices_neighbors_west_cheaper(brown_cost)
+		
+		return self.find_min_price(prices)
+
+	def get_prices_neighbors_east_cheaper(self,brown_cost):
+		prices = []
+		east_cost = 0
+		west_cost = 0
+		east_trade_price = self.east_trade_prices
+		west_trade_price = self.west_trade_prices
+		free_brown = self.free_conditional_resources[COLOR_BROWN]
+		
+		for east_combo in list(product(*self.east_player.conditional_resources)):
+			for west_combo in list(product(*self.west_player.conditional_resources)):
+				#Get neighbor resources
+				east_resources = self.east_player.resources.copy()
+				west_resources = self.west_player.resources.copy()
+				#Add resources from combo
+				for resource in east_combo:
+					east_resources[resource] += 1
+				for resource in west_combo:
+					west_resources[resource] += 1
+				have_resources = True
+				#Now we check if we can afford it
+				for resource in brown_cost:
+					if east_resources[resource]>0: #if east player has it
+						east_cost += east_trade_price
+						east_resources[resource] -= 1
+					elif west_resources[resource]>0: #if west player has it
+						west_cost += west_trade_price
+						west_resources[resource] -= 1
+					else:#if none of them have it 
+						if free_brown>0: #Use a free conditional free resource if you have any left
+							free_brown -= 1
+						else:	#Cannot buy the card
+							have_resources = False
+							break
+				
+				if not(have_resources and \
+					(sum([max(east_cost-free_brown*1,0),west_cost]<=self.resources[RESOURCE_GOLD]) or\
+					sum([east_cost,max(west_cost-free_brown*2,0)]<=self.resources[RESOURCE_GOLD]))):
+					continue
+
+				#use free browns if you have some left
+				for _ in range(free_brown):
+					if east_cost > 0:
+						east_cost -= east_trade_price
+					else:
+						west_cost -= west_trade_price
+				
+				prices.append({"east":east_cost,"west":west_cost})
+
+		return prices
+
+	def get_prices_neighbors_west_cheaper(self,brown_cost):
+		prices = []
+		east_cost = 0
+		west_cost = 0
+		east_trade_price = self.east_trade_prices
+		west_trade_price = self.west_trade_prices
+		free_brown = self.free_conditional_resources[COLOR_BROWN]
+		
+		for east_combo in list(product(*self.east_player.conditional_resources)):
+			for west_combo in list(product(*self.west_player.conditional_resources)):
+				#Get neighbor resources
+				east_resources = self.east_player.resources.copy()
+				west_resources = self.west_player.resources.copy()
+				#Add resources from combo
+				for resource in east_combo:
+					east_resources[resource] += 1
+				for resource in west_combo:
+					west_resources[resource] += 1
+				have_resources = True
+				#Now we check if we can afford it
+				for resource in brown_cost:
+					if west_resources[resource]>0: #if east player has it
+						west_cost += west_trade_price
+						west_resources[resource] -= 1
+					elif east_resources[resource]>0: #if west player has it
+						east_cost += east_trade_price
+						east_resources[resource] -= 1
+					else:#if none of them have it 
+						if free_brown>0: #Use a free conditional free resource if you have any left
+							free_brown -= 1
+						else:	#Cannot buy the card
+							have_resources = False
+							break
+				
+				if not(have_resources and \
+					(sum([max(east_cost-free_brown*2,0),west_cost]<=self.resources[RESOURCE_GOLD]) or\
+					sum([east_cost,max(west_cost-free_brown*1,0)]<=self.resources[RESOURCE_GOLD]))):
+					continue
+
+				#use free browns if you have some left
+				for _ in range(free_brown):
+					if west_cost > 0:
+						west_cost -= west_trade_price
+					else:
+						east_cost -= east_trade_price
+				
+				prices.append({"east":east_cost,"west":west_cost})
+
+		return prices
+
+	def get_prices_neighbors_same(self,brown_cost):
+
+		prices = []
 		both = 0
 		east_cost = 0
 		west_cost = 0
+		trade_price = self.east_trade_prices
 		free_brown = self.free_conditional_resources[COLOR_BROWN]
-
-		if self.east_trade_prices == self.west_trade_prices: #If both same price
+		#Create alternate universes for each conditional resource
+		for east_combo in list(product(*self.east_player.conditional_resources)):
+			for west_combo in list(product(*self.west_player.conditional_resources)):
+				#Get neighbor resources
+				east_resources = self.east_player.resources.copy()
+				west_resources = self.west_player.resources.copy()
+				#Add resources from combo
+				for resource in east_combo:
+					east_resources[resource] += 1
+				for resource in west_combo:
+					west_resources[resource] += 1
+				have_resources = True
+				#Now we check if we can afford it
+				for resource in brown_cost:
+					if east_resources[resource]>0 and west_resources[resource]>0:
+						both.append(resource) #Add this resource to both
+						east_resources[resource] -= 1
+						west_resources[resource] -= 1
+					elif east_resources[resource]>0: #if east player has it
+						east_cost += trade_price
+						east_resources[resource] -= 1
+					elif west_resources[resource]>0: #if west player has it
+						west_cost += trade_price
+						west_resources[resource] -= 1
+					else:#if none of them have it 
+						if resource in both: #If it was previously added to both
+							both.remove(resource)
+							east_cost += trade_price
+							west_cost += trade_price
+						elif free_brown>0: #Use a free conditional free resource if you have any left
+							free_brown -= 1
+						else:	#Cannot buy the card
+							have_resources = False
+							break
+				
+				both = len(both) #Amount of unused resources owned by both players
+				#If you cannot afford the card with this combination of resources
+				if not(have_resources and sum([east_cost,west_cost,both*trade_price])-free_brown*trade_price <= self.resources[RESOURCE_GOLD]):
+					continue
+				
+				#Use free browns you have left
+				for _ in range(free_brown):
+					if east_cost > west_cost: #Use free brown on east 
+						east_cost -= trade_price
+					elif east_cost < west_cost: #Use free brown on west 
+						west_cost -= trade_price
+					elif both > 0: #Use free brown on both 
+						both -= 1
+					else: #if no both and equal payout, just choose one randomly
+						if choice([True,False]):
+							east_cost -= trade_price
+						else:
+							west_cost -= trade_price
 			
-			for east_combo in list(product(*self.east_player.conditional_resources)):
-				for west_combo in list(product(*self.west_player.conditional_resources)):
+				cost = {"east":east_cost,"west":west_cost}
 
-					for resource in brown_cost:
-						east_has = east_resources[resource]>0 or resource in east_combo
-						west_has = west_resources[resource]>0 or resource in west_combo
+				if both > 1: #if 2,3,4,5,6 give them both the same price for pair number
+					cost["west"] += trade_price*(both//2)
+					cost["east"] += trade_price*(both//2)
+				if both%2 == 1: #if 1,3,5
+					#Give the player with the least coins more coins OR
+					#Give a random player more coins 
+					#This is a compromise for AI, could be changed later for players
+					#FIXME
+					if cost["east"] > cost['west']:
+						cost["west"] += trade_price
+					elif cost["east"] < cost['west']:
+						cost["west"] += trade_price
+					else:
+						cost[choice(["east","west"])] += trade_price
 
-						if east_has or west_has:
-							both += 1 #This is "amount of resources both have" not price
-						elif east_has:
-							east_cost += self.east_trade_prices
-						elif west_has:
-							west_cost += self.west_trade_prices
-						else:#if none of them have it 
-							
+				prices.append(cost)
+				
+		return prices
 
 
-		elif self.east_trade_prices == 1 and self.west_trade_prices == 2: #If east player is cheaper
+	def find_min_price(prices):
+		if len(prices) == 0:
+			return -1
 		
-		else:	#If west player is cheaper
+		min_price = {"east":1000,"west":1000}
+		sum_price = 2000
+		
+		for price in prices:
+			if sum(price.values()) < sum_price:
+				min_price = price
+				sum_price = sum(price.values())
+
+		return min_price
