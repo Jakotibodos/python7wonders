@@ -59,7 +59,7 @@ def play_turn(player):
     if hasattr(card,"effect_2"): #For cards that give coins depending on card counts
         add_effect_to_queue(card.effect_2)
 
-
+"""
 def add_effect_to_queue(player,name):
     if name == "Vineyard":
         queue.insert(0,(lambda p : p.add_coins_per_card(1,COLOR_BROWN,True,True,True),player))
@@ -69,7 +69,7 @@ def add_effect_to_queue(player,name):
         if player.wonder.side == "B":
             player.add_resource(RESOURCE_GOLD,2-player.wonder.stages_completed)
         queue.append((lambda p : p.play_card_from_discard(),player))
-
+"""
 
 def deck_setup_age_1(player_count):
     deck = []

@@ -4,22 +4,22 @@ from common import *
 import game
 
 class Card:
-	def __init__(self, id,name,color,age,cost,prechains=[],postchains=[]):
-		self.id = id
-		self.name = name
-		self.color = color
-		self.age = age
-		self.prechains = []
-		self.postchains = []
-		self.cost = cost
+    def __init__(self, id, name, color, age, cost, prechains=[], postchains=[]):
+        self.id = id
+        self.name = name
+        self.color = color
+        self.age = age
+        self.prechains = prechains
+        self.postchains = postchains
+        self.cost = cost
 
-	def __str__(self) -> str:
-		return f"{ANSI[self.color]}{self.name}\033[0m"
-	def __repr__(self) -> str:
-		return f"{ANSI[self.color]}{self.name}\033[0m"
-	
-	def get_cost(self):
-		return self.cost
+    def __str__(self) -> str:
+        return f"{ANSI[self.color]}{self.name}\033[0m"
+    def __repr__(self) -> str:
+        return f"{ANSI[self.color]}{self.name}\033[0m"
+    def get_cost(self):
+        return self.cost
+    
 
 #Age 1 Cards
     
@@ -495,7 +495,7 @@ class Observatory(Card) :
         super().__init__(id,"Observatory",COLOR_GREEN,3,[RESOURCE_ORE,RESOURCE_ORE,RESOURCE_GLASS,RESOURCE_LOOM],["Laboratory"])
     
     def effect(self,player) :
-        p.add_science(SCIENCE_GEAR)
+        player.add_science(SCIENCE_GEAR)
 
 class Study(Card) :
     def __init__(self,id) :

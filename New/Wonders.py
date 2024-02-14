@@ -1,7 +1,8 @@
 from Players import Player
 from common import *
-from game import add_effect_to_queue
+#from game import add_effect_to_queue
 
+#TODO change Wonders to classes (like cards)
 class Wonder_Stage:
 	
 	def __init__(self,cost,effect):
@@ -15,7 +16,7 @@ class Wonder_Stage:
 
 class Wonder:
 
-	def __init__(self,name,side,player):
+	def __init__(self,name,side,player,queue):
 		self.name = name
 		self.side = side #"A" or "B"
 		self.stages_completed = 0
@@ -30,9 +31,12 @@ class Wonder:
 		elif name == "Gizah":
 			self.setup_Gizah(player)
 		elif name == "Halikarnassos":
-			self.setup_Halikarnassos(player)
+			self.setup_Halikarnassos(player,queue)
 		elif name == "Rhodos":
 			self.setup_Rhodos(player)
+	
+	def has_more_stages(self):
+		return not(self.stages_completed == len(self.stages))
 
 	def setup_Alexandria(self,player):
 		player.add_resource(RESOURCE_GLASS)
@@ -92,12 +96,12 @@ class Wonder:
 			self.stages.append(Wonder_Stage([RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK],lambda p : p.add_points(POINTS_WONDER,5)))
 			self.stages.append(Wonder_Stage([RESOURCE_PAPYRUS,RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE],lambda p : p.add_points(POINTS_WONDER,7)))
 
-	def setup_Halikarnassos(self,player):
+	def setup_Halikarnassos(self,player,queue):
 		player.add_resource(RESOURCE_LOOM)
 		if self.side == "A":
 			self.id = 9
 			self.stages.append(Wonder_Stage([RESOURCE_BRICK,RESOURCE_BRICK],lambda p : p.add_points(POINTS_WONDER,3)))
-			self.stages.append(Wonder_Stage([RESOURCE_ORE,RESOURCE_ORE,RESOURCE_ORE],lambda p : add_effect_to_queue(p,"Halikarnassos")))
+			self.stages.append(Wonder_Stage([RESOURCE_ORE,RESOURCE_ORE,RESOURCE_ORE],lambda p : queue.append(p.)))
 			self.stages.append(Wonder_Stage([RESOURCE_LOOM,RESOURCE_LOOM],lambda p : p.add_points(POINTS_WONDER,7)))
 			
 		else: #side == "B"

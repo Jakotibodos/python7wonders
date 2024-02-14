@@ -237,26 +237,26 @@ class Player:
 		  + max(len(new_cost_grey)-self.free_conditional_resources[COLOR_GREY],0) == 0:
 			return 0
 
-		
+		possible_prices = []
 		#Buying from other people and/or using conditional resources
-
 		if len(new_cost_brown) == 0: #Only grey resources left and have to buy some
 			return self.buy_grey_from_neighbors(new_cost_grey)
 		
 		elif len(new_cost_grey) == 0: #Only brown resources left 
-			possible_prices = []
-			for combo in list(product(*self.conditional_resources)): 
-				new_new_cost_brown = new_cost_brown.copy()
+			for combo in list(product(*self.conditional_resources)):
+				combo = list(combo) 
+				new_new_cost_brown = []
 				for resource in new_cost_brown:
 					if resource in combo:
 						combo.remove(resource) 
 					else:
 						new_new_cost_brown.append(resource)
-				if len(new_new_cost_brown) - self.free_conditional_resources[BROWN_RESOURCES] < 1:
+						
+				if len(new_new_cost_brown) - self.free_conditional_resources[COLOR_BROWN] < 1:
 					return 0
 				else:
 					price = self.buy_brown_from_neighbors(new_new_cost_brown)
-					if price == {'east':self.east_trade_prices,'west':0} or {'east':0,'west':self.west_trade_prices}: #it doesn't get better than this
+					if price == {'east':self.east_trade_prices,'west':0} or price == {'east':0,'west':self.west_trade_prices}: #it doesn't get better than this
 						return price
 					elif price != -1:
 						possible_prices.append(price)
@@ -268,7 +268,7 @@ class Player:
 			for combo in list(product(*self.conditional_resources)): 
 
 				#For each combination, check if can be paid with those resources
-				new_new_cost_brown = new_cost_brown.copy()
+				new_new_cost_brown = []
 				for resource in new_cost_brown:
 					if resource in combo:
 						combo.remove(resource) 
@@ -276,16 +276,16 @@ class Player:
 						new_new_cost_brown.append(resource)
 
 				#If could be brown paid with basic resources and/or yellow conditional resources
-				if len(new_new_cost_brown) - self.free_conditional_resources[BROWN_RESOURCES] < 1:
+				if len(new_new_cost_brown) - self.free_conditional_resources[COLOR_BROWN] < 1:
 					return grey_price
 				else:
 					brown_price = self.buy_brown_from_neighbors(new_new_cost_brown) 
-					if brown_price == {'east':self.east_trade_prices,'west':0} or {'east':0,'west':self.west_trade_prices}: #it doesn't get better than this
+					if brown_price == {'east':self.east_trade_prices,'west':0} or brown_price == {'east':0,'west':self.west_trade_prices}: #it doesn't get better than this
 						return {'east':brown_price["east"]+grey_price["east"],'west':brown_price["west"]+grey_price["west"]} #Combine grey and brown prices
 					elif brown_price != -1:
 						possible_prices.append({'east':brown_price["east"]+grey_price["east"],'west':brown_price["west"]+grey_price["west"]}) #Combine grey and brown prices
 		
-		return self.find_min_price(possible_prices)
+		return find_min_price(possible_prices)
 	
 
 	def is_free_prechains(self,card):
@@ -374,18 +374,19 @@ class Player:
 		else:	#If west player is cheaper
 			prices = self.get_prices_neighbors_west_cheaper(brown_cost)
 		
-		return self.find_min_price(prices)
+		return find_min_price(prices)
 
 	def get_prices_neighbors_east_cheaper(self,brown_cost):
 		prices = []
-		east_cost = 0
-		west_cost = 0
 		east_trade_price = self.east_trade_prices
 		west_trade_price = self.west_trade_prices
-		free_brown = self.free_conditional_resources[COLOR_BROWN]
-		
+
 		for east_combo in list(product(*self.east_player.conditional_resources)):
 			for west_combo in list(product(*self.west_player.conditional_resources)):
+				east_cost = 0
+				west_cost = 0
+				free_brown = self.free_conditional_resources[COLOR_BROWN]
+				
 				#Get neighbor resources
 				east_resources = self.east_player.resources.copy()
 				west_resources = self.west_player.resources.copy()
@@ -411,8 +412,8 @@ class Player:
 							break
 				
 				if not(have_resources and \
-					(sum([max(east_cost-free_brown*1,0),west_cost]<=self.resources[RESOURCE_GOLD]) or\
-					sum([east_cost,max(west_cost-free_brown*2,0)]<=self.resources[RESOURCE_GOLD]))):
+					(sum([max(east_cost-free_brown*1,0),west_cost])<=self.resources[RESOURCE_GOLD] or\
+					sum([east_cost,max(west_cost-free_brown*2,0)])<=self.resources[RESOURCE_GOLD])):
 					continue
 
 				#use free browns if you have some left
@@ -428,14 +429,15 @@ class Player:
 
 	def get_prices_neighbors_west_cheaper(self,brown_cost):
 		prices = []
-		east_cost = 0
-		west_cost = 0
 		east_trade_price = self.east_trade_prices
 		west_trade_price = self.west_trade_prices
-		free_brown = self.free_conditional_resources[COLOR_BROWN]
 		
 		for east_combo in list(product(*self.east_player.conditional_resources)):
 			for west_combo in list(product(*self.west_player.conditional_resources)):
+				east_cost = 0
+				west_cost = 0
+				free_brown = self.free_conditional_resources[COLOR_BROWN]
+				
 				#Get neighbor resources
 				east_resources = self.east_player.resources.copy()
 				west_resources = self.west_player.resources.copy()
@@ -461,8 +463,8 @@ class Player:
 							break
 				
 				if not(have_resources and \
-					(sum([max(east_cost-free_brown*2,0),west_cost]<=self.resources[RESOURCE_GOLD]) or\
-					sum([east_cost,max(west_cost-free_brown*1,0)]<=self.resources[RESOURCE_GOLD]))):
+					(sum([max(east_cost-free_brown*2,0),west_cost])<=self.resources[RESOURCE_GOLD] or\
+					sum([east_cost,max(west_cost-free_brown*1,0)])<=self.resources[RESOURCE_GOLD])):
 					continue
 
 				#use free browns if you have some left
@@ -477,16 +479,17 @@ class Player:
 		return prices
 
 	def get_prices_neighbors_same(self,brown_cost):
-
-		prices = []
-		both = 0
-		east_cost = 0
-		west_cost = 0
 		trade_price = self.east_trade_prices
-		free_brown = self.free_conditional_resources[COLOR_BROWN]
+		prices = []
 		#Create alternate universes for each conditional resource
 		for east_combo in list(product(*self.east_player.conditional_resources)):
 			for west_combo in list(product(*self.west_player.conditional_resources)):
+				
+				both = []
+				east_cost = 0
+				west_cost = 0
+				free_brown = self.free_conditional_resources[COLOR_BROWN]
+				
 				#Get neighbor resources
 				east_resources = self.east_player.resources.copy()
 				west_resources = self.west_player.resources.copy()
@@ -560,16 +563,16 @@ class Player:
 		return prices
 
 
-	def find_min_price(prices):
-		if len(prices) == 0:
-			return -1
-		
-		min_price = {"east":1000,"west":1000}
-		sum_price = 2000
-		
-		for price in prices:
-			if sum(price.values()) < sum_price:
-				min_price = price
-				sum_price = sum(price.values())
+def find_min_price(prices):
+	if len(prices) == 0:
+		return -1
+	
+	min_price = {"east":1000,"west":1000}
+	sum_price = 2000
+	
+	for price in prices:
+		if sum(price.values()) < sum_price:
+			min_price = price
+			sum_price = sum(price.values())
 
-		return min_price
+	return min_price
