@@ -15,6 +15,7 @@ from common import *
 from itertools import product
 from random import choice
 
+
 class Player:
 	def __init__(self, name):
 		self.name = name
@@ -187,8 +188,13 @@ class Player:
 	def show_available_cards(self):
 		cost = []
 		for card in self.hand:
-			cost.append(get_cost(card))
-
+			card_price = self.get_price(card)
+			cost.append(card_price)
+			if card_price != -1:
+				print(card)
+			else:
+				card.print_unavailable()
+			
 		#TODO
 			
 		return 
@@ -202,7 +208,7 @@ class Player:
 	#if -1 the card cannot be bought (won't be available)
 	#if [w,e] w is amount paid to west player and e to east player
 
-	def get_price(self,card):
+	def get_price(self,card): #this can also be a Wonder
 		
 		if self.is_free_prechains(card):
 			return 0
@@ -289,6 +295,8 @@ class Player:
 	
 
 	def is_free_prechains(self,card):
+		if not hasattr(card,"prechains"):
+			return False
 		for c in card.prechains:
 			if self.tableau.contains(c):
 				return True

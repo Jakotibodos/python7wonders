@@ -17,6 +17,9 @@ class Card:
         return f"{ANSI[self.color]}{self.name}\033[0m"
     def __repr__(self) -> str:
         return f"{ANSI[self.color]}{self.name}\033[0m"
+    
+    def print_unavailable(self) ->str:
+        return print(f"{ANSI['unavailable']}{self.name}\033[0m")
     def get_cost(self):
         return self.cost
     
@@ -27,70 +30,70 @@ class Card:
     
 class LumberYard(Card):
 	def __init__(self, id):
-		super().__init__(1,"Lumber Yard",COLOR_BROWN,1,None)
+		super().__init__(id,"Lumber Yard",COLOR_BROWN,1,None)
 	
 	def effect(player):
 		player.add_resource(RESOURCE_WOOD)
 
 class StonePit(Card):
-    def __init__(self):
-        super().__init__(2, "Stone Pit", COLOR_BROWN, 1, None)
+    def __init__(self,id):
+        super().__init__(id, "Stone Pit", COLOR_BROWN, 1, None)
     
     def effect(self, player):
         player.add_resource(RESOURCE_STONE)
 
 class ClayPool(Card):
-    def __init__(self):
-        super().__init__(3, "Clay Pool", COLOR_BROWN, 1, None)
+    def __init__(self,id):
+        super().__init__(id, "Clay Pool", COLOR_BROWN, 1, None)
     
     def effect(self, player):
         player.add_resource(RESOURCE_BRICK)
 
 class OreVein(Card):
-    def __init__(self):
-        super().__init__(4, "Ore Vein", COLOR_BROWN, 1, None)
+    def __init__(self,id):
+        super().__init__(id, "Ore Vein", COLOR_BROWN, 1, None)
     
     def effect(self, player):
         player.add_resource(RESOURCE_ORE)
 
 class TreeFarm(Card):
-    def __init__(self):
-        super().__init__(5, "Tree Farm", COLOR_BROWN, 1, [RESOURCE_GOLD])
+    def __init__(self,id):
+        super().__init__(id, "Tree Farm", COLOR_BROWN, 1, [RESOURCE_GOLD])
     
     def effect(self, player):
         player.add_conditional_resource((RESOURCE_WOOD, RESOURCE_BRICK))
 
 class Excavation(Card):
-    def __init__(self):
-        super().__init__(6, "Excavation", COLOR_BROWN, 1, [RESOURCE_GOLD])
+    def __init__(self,id):
+        super().__init__(id, "Excavation", COLOR_BROWN, 1, [RESOURCE_GOLD])
     
     def effect(self, player):
         player.add_conditional_resource((RESOURCE_STONE, RESOURCE_BRICK))
 
 class ClayPit(Card):
-    def __init__(self):
-        super().__init__(7, "Clay Pit", COLOR_BROWN, 1, [RESOURCE_GOLD])
+    def __init__(self,id):
+        super().__init__(id, "Clay Pit", COLOR_BROWN, 1, [RESOURCE_GOLD])
     
     def effect(self, player):
         player.add_conditional_resource((RESOURCE_ORE, RESOURCE_BRICK))
 
 class TimberYard(Card):
-    def __init__(self):
-        super().__init__(8, "Timber Yard", COLOR_BROWN, 1, [RESOURCE_GOLD])
+    def __init__(self,id):
+        super().__init__(id, "Timber Yard", COLOR_BROWN, 1, [RESOURCE_GOLD])
     
     def effect(self, player):
         player.add_conditional_resource((RESOURCE_WOOD, RESOURCE_STONE))
 
 class ForestCave(Card):
-    def __init__(self):
-        super().__init__(9, "Forest Cave", COLOR_BROWN, 1, [RESOURCE_GOLD])
+    def __init__(self,id):
+        super().__init__(id, "Forest Cave", COLOR_BROWN, 1, [RESOURCE_GOLD])
     
     def effect(self, player):
         player.add_conditional_resource((RESOURCE_WOOD, RESOURCE_ORE))
 
 class Mine(Card):
-    def __init__(self):
-        super().__init__(10, "Mine", COLOR_BROWN, 1, [RESOURCE_GOLD])
+    def __init__(self,id):
+        super().__init__(id, "Mine", COLOR_BROWN, 1, [RESOURCE_GOLD])
     
     def effect(self, player):
         player.add_conditional_resource((RESOURCE_STONE, RESOURCE_ORE))
@@ -98,22 +101,22 @@ class Mine(Card):
 #Grey Cards
         
 class Glassworks(Card):
-    def __init__(self):
-        super().__init__(11, "Glassworks", COLOR_GREY, 1, None)
+    def __init__(self,id):
+        super().__init__(id, "Glassworks", COLOR_GREY, 1, None)
     
     def effect(self, player):
         player.add_resource(RESOURCE_GLASS)
 
 class Press(Card):
-    def __init__(self):
-        super().__init__(12, "Press", COLOR_GREY, 1, None)
+    def __init__(self,id):
+        super().__init__(id, "Press", COLOR_GREY, 1, None)
     
     def effect(self, player):
         player.add_resource(RESOURCE_PAPYRUS)
 
 class Loom(Card):
-    def __init__(self):
-        super().__init__(13, "Loom", COLOR_GREY, 1, None)
+    def __init__(self,id):
+        super().__init__(id, "Loom", COLOR_GREY, 1, None)
     
     def effect(self, player):
         player.add_resource(RESOURCE_LOOM)
@@ -302,14 +305,14 @@ class Vineyard(Card):
         super().__init__(id,"Vineyard",COLOR_YELLOW,2,None)
         self.queue = queue
     def effect(self,player):
-        self.queue.insert(0,player.add_coins_per_card(1,COLOR_BROWN,True,True,True))
+        self.queue.insert(0,(lambda p : p.add_coins_per_card(1,COLOR_BROWN,True,True,True),player))
 
 class Bazar(Card):
     def __init__(self,id,queue):
         super().__init__(id,"Bazar",COLOR_YELLOW,2,None)
         self.queue = queue
     def effect(self,player):
-        self.queue.insert(0,player.add_coins_per_card(2,COLOR_GREY,True,True,True))
+        self.queue.insert(0,(lambda p : p.add_coins_per_card(2,COLOR_GREY,True,True,True),player))
 
 #Red Cards
         

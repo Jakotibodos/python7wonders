@@ -1,10 +1,12 @@
 from Players import *
 from common import *
 from Cards import *
+from Wonders import *
 
 p1 = Player("Player 1")
 east = Player("East Player")
 west = Player("West Player")
+p1.set_wonder(Ephesos(p1))
 
 p1.set_east_player(east)
 p1.set_west_player(west)
@@ -21,13 +23,16 @@ p1.add_resource(RESOURCE_PAPYRUS,1)
 east.add_resource(RESOURCE_GLASS,1)
 
 p1.add_free_conditional_resource(COLOR_BROWN)
-east.add_conditional_resource((RESOURCE_STONE,RESOURCE_WOOD))
-west.add_conditional_resource((RESOURCE_ORE,RESOURCE_STONE))
-east.add_conditional_resource((RESOURCE_ORE,RESOURCE_STONE))
 
 
 #cards
 craftsmen = CraftmensGuild(1) #2 ore 2 stone
 palace = Palace(2) #one of each
 
-print(p1.get_price(palace))
+
+print(p1.get_price(p1.wonder))
+p1.wonder.effect(p1)
+print(p1.get_price(p1.wonder))
+p1.wonder.effect(p1)
+print(p1.get_price(p1.wonder))
+p1.print_score()

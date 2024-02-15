@@ -1,130 +1,213 @@
 from Players import Player
 from common import *
+from random import choice
 #from game import add_effect_to_queue
 
-#TODO change Wonders to classes (like cards)
-class Wonder_Stage:
-	
-	def __init__(self,cost,effect):
-		self.cost = cost
-		self.effect = effect
-
-	def add_multiple(self,player,points=0,coins=0,war=0):
-		player.add_points(POINTS_WONDER,points)
-		player.add_resource(RESOURCE_GOLD,coins)
-		player.add_shields(war)
-
 class Wonder:
-
-	def __init__(self,name,side,player,queue):
-		self.name = name
-		self.side = side #"A" or "B"
+	def __init__(self):
+		self.side = choice(["A","B"]) #"A" or "B"
 		self.stages_completed = 0
 		self.stages = []
-		
-		if name == "Alexandria":
-			self.setup_Alexandria(player)
-		elif name == "Babylon":
-			self.setup_Babylon(player)
-		elif name == "Ephesos":
-			self.setup_Ephesos(player)
-		elif name == "Gizah":
-			self.setup_Gizah(player)
-		elif name == "Halikarnassos":
-			self.setup_Halikarnassos(player,queue)
-		elif name == "Rhodos":
-			self.setup_Rhodos(player)
+		self.all_done = False
 	
-	def has_more_stages(self):
-		return not(self.stages_completed == len(self.stages))
+	def get_cost(self):
+		return self.cost
+	
 
-	def setup_Alexandria(self,player):
-		player.add_resource(RESOURCE_GLASS)
+class Ephesos(Wonder):
+	def __init__(self,player):
+		super().__init__()
+		player.add_resource(RESOURCE_PAPYRUS)
+		self.cost = [RESOURCE_STONE,RESOURCE_STONE]
+	
+	def effect(self, player):
 		if self.side == "A":
-			self.id = 1
-			self.stages.append(Wonder_Stage([RESOURCE_STONE,RESOURCE_STONE],lambda p : p.add_points(POINTS_WONDER,3)))
-			self.stages.append(Wonder_Stage([RESOURCE_ORE,RESOURCE_ORE],lambda p : p.add_free_conditional_resource(COLOR_BROWN)))
-			self.stages.append(Wonder_Stage([RESOURCE_GLASS,RESOURCE_GLASS],lambda p : p.add_points(POINTS_WONDER,7)))
-			
-		else: #side == "B"
-			self.id = 2
-			self.stages.append(Wonder_Stage([RESOURCE_BRICK,RESOURCE_BRICK],lambda p : p.add_free_conditional_resource(COLOR_BROWN)))
-			self.stages.append(Wonder_Stage([RESOURCE_WOOD,RESOURCE_WOOD],lambda p : p.add_free_conditional_resource(COLOR_GREY)))
-			self.stages.append(Wonder_Stage([RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE],lambda p : p.add_points(POINTS_WONDER,7)))
+			if self.stages_completed == 0:
+				player.add_points(POINTS_WONDER,3)
+				self.cost = [RESOURCE_WOOD,RESOURCE_WOOD]
+			elif self.stages_completed == 1:
+				player.add_resource(RESOURCE_GOLD,9)
+				self.cost = [RESOURCE_PAPYRUS,RESOURCE_PAPYRUS]
+			else:
+				player.add_points(POINTS_WONDER,7)
+				self.all_done = True
+		else: #B Side
+			if self.stages_completed == 0:
+				player.add_points(POINTS_WONDER,2)
+				player.add_resource(RESOURCE_GOLD,4)
+				self.cost = [RESOURCE_WOOD,RESOURCE_WOOD]
+			elif self.stages_completed == 1:
+				player.add_points(POINTS_WONDER,3)
+				player.add_resource(RESOURCE_GOLD,4)
+				self.cost = [RESOURCE_LOOM,RESOURCE_GLASS,RESOURCE_PAPYRUS]
+			else:
+				player.add_points(POINTS_WONDER,5)
+				player.add_resource(RESOURCE_GOLD,4)
+				self.all_done = True
 
-	def setup_Babylon(self,player):
+class Babylon(Wonder):
+	def __init__(self,player):
+		super().__init__()
 		player.add_resource(RESOURCE_BRICK)
 		if self.side == "A":
-			self.id = 3
-			self.stages.append(Wonder_Stage([RESOURCE_BRICK,RESOURCE_BRICK],lambda p : p.add_points(POINTS_WONDER,3)))
-			self.stages.append(Wonder_Stage([RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_WOOD],lambda p : p.add_science("any")))
-			self.stages.append(Wonder_Stage([RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK],lambda p : p.add_points(POINTS_WONDER,7)))
-			
-		else: #side == "B"
-			self.id = 4
-			self.stages.append(Wonder_Stage([RESOURCE_LOOM,RESOURCE_BRICK],lambda p : p.add_free_conditional_resource(COLOR_BROWN)))
-			self.stages.append(Wonder_Stage([RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_GLASS],lambda p : p.can_double_last_cards()))
-			self.stages.append(Wonder_Stage([RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_PAPYRUS],lambda p : p.add_science("any")))
-			
-	
-	def setup_Ephesos(self,player):
-		player.add_resource(RESOURCE_PAPYRUS)
-		if self.side == "A":
-			self.id = 5
-			self.stages.append(Wonder_Stage([RESOURCE_STONE,RESOURCE_STONE],lambda p : p.add_points(POINTS_WONDER,3)))
-			self.stages.append(Wonder_Stage([RESOURCE_WOOD,RESOURCE_WOOD],lambda p : p.add_resource(RESOURCE_GOLD,9)))
-			self.stages.append(Wonder_Stage([RESOURCE_PAPYRUS,RESOURCE_PAPYRUS],lambda p : p.add_points(POINTS_WONDER,7)))
-			
-		else: #side == "B"
-			self.id = 6
-			self.stages.append(Wonder_Stage([RESOURCE_STONE,RESOURCE_STONE],lambda w: w.add_multiple(player,2,4)))
-			self.stages.append(Wonder_Stage([RESOURCE_WOOD,RESOURCE_WOOD],lambda w: w.add_multiple(player,3,4)))
-			self.stages.append(Wonder_Stage([RESOURCE_PAPYRUS,RESOURCE_LOOM,RESOURCE_GLASS],lambda w: w.add_multiple(player,5,4)))
+			self.cost = [RESOURCE_BRICK,RESOURCE_BRICK]
+		else:
+			self.cost = [RESOURCE_BRICK,RESOURCE_LOOM]
 
-	def setup_Gizah(self,player):
+	def effect(self, player):
+		if self.side == "A":
+			if self.stages_completed == 0:
+				player.add_points(POINTS_WONDER,3)
+				self.cost = [RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_WOOD]
+			elif self.stages_completed == 1:
+				player.add_science("any")
+				self.cost = [RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK]
+			else:
+				player.add_points(POINTS_WONDER,7)
+				self.all_done = True
+		else: #B Side
+			if self.stages_completed == 0:
+				player.add_points(POINTS_WONDER,3)
+				self.cost = [RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_GLASS]
+			elif self.stages_completed == 1:
+				player.can_double_last_cards()
+				self.cost = [RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_PAPYRUS]
+			else:
+				player.add_science("any")
+				self.all_done = True
+
+class Gizah(Wonder):
+	def __init__(self,player):
+		super().__init__()
 		player.add_resource(RESOURCE_STONE)
 		if self.side == "A":
-			self.id = 7
-			self.stages.append(Wonder_Stage([RESOURCE_STONE,RESOURCE_STONE],lambda p : p.add_points(POINTS_WONDER,3)))
-			self.stages.append(Wonder_Stage([RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_WOOD],lambda p : p.add_points(POINTS_WONDER,5)))
-			self.stages.append(Wonder_Stage([RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE],lambda p : p.add_points(POINTS_WONDER,7)))
-			
-		else: #side == "B"
-			self.id = 8
-			self.stages.append(Wonder_Stage([RESOURCE_WOOD,RESOURCE_WOOD],lambda p : p.add_points(POINTS_WONDER,3)))
-			self.stages.append(Wonder_Stage([RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE],lambda p : p.add_points(POINTS_WONDER,5)))
-			self.stages.append(Wonder_Stage([RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK],lambda p : p.add_points(POINTS_WONDER,5)))
-			self.stages.append(Wonder_Stage([RESOURCE_PAPYRUS,RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE],lambda p : p.add_points(POINTS_WONDER,7)))
+			self.cost = [RESOURCE_STONE,RESOURCE_STONE]
+		else:
+			self.cost = [RESOURCE_WOOD,RESOURCE_WOOD]
 
-	def setup_Halikarnassos(self,player,queue):
-		player.add_resource(RESOURCE_LOOM)
+	def effect(self, player):
 		if self.side == "A":
-			self.id = 9
-			self.stages.append(Wonder_Stage([RESOURCE_BRICK,RESOURCE_BRICK],lambda p : p.add_points(POINTS_WONDER,3)))
-			self.stages.append(Wonder_Stage([RESOURCE_ORE,RESOURCE_ORE,RESOURCE_ORE],lambda p : queue.append(p.)))
-			self.stages.append(Wonder_Stage([RESOURCE_LOOM,RESOURCE_LOOM],lambda p : p.add_points(POINTS_WONDER,7)))
-			
-		else: #side == "B"
-			
-			self.id = 10
-			self.stages.append(Wonder_Stage([RESOURCE_ORE,RESOURCE_ORE],lambda p : add_effect_to_queue(p,"Halikarnassos")))
-			self.stages.append(Wonder_Stage([RESOURCE_BRICK,RESOURCE_BRICK],lambda p : add_effect_to_queue(p,"Halikarnassos")))
-			self.stages.append(Wonder_Stage([RESOURCE_PAPYRUS,RESOURCE_LOOM,RESOURCE_GLASS],lambda p : add_effect_to_queue(p,"Halikarnassos")))
+			if self.stages_completed == 0:
+				player.add_points(POINTS_WONDER,3)
+				self.cost = [RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_WOOD]
+			elif self.stages_completed == 1:
+				player.add_points(POINTS_WONDER,5)
+				self.cost = [RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE]
+			else:
+				player.add_points(POINTS_WONDER,7)
+				self.all_done = True
+		else: #B Side
+			if self.stages_completed == 0:
+				player.add_points(POINTS_WONDER,3)
+				self.cost = [RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE]
+			elif self.stages_completed == 1:
+				player.add_points(POINTS_WONDER,5)
+				self.cost = [RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK]
+			elif self.stages_completed == 2:
+				player.add_points(POINTS_WONDER,5)
+				self.cost = [RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE,RESOURCE_PAPYRUS]
+			else:
+				player.add_points(POINTS_WONDER,7)
+				self.all_done = True
 
-	def setup_Rhodos(self,player):
+#TODO: implement play from discard
+class Halikarnassos(Wonder):
+	def __init__(self,player,queue):
+		super().__init__()
+		player.add_resource(RESOURCE_LOOM)
+		self.queue = queue
+		if self.side == "A":
+			self.cost = [RESOURCE_BRICK,RESOURCE_BRICK]
+		else:
+			self.cost = [RESOURCE_ORE,RESOURCE_ORE]
+	
+	#TODO: implement play from discard
+	def effect(self, player):
+		if self.side == "A":
+			if self.stages_completed == 0:
+				player.add_points(POINTS_WONDER,3)
+				self.cost = [RESOURCE_ORE,RESOURCE_ORE,RESOURCE_ORE]
+			elif self.stages_completed == 1:
+				#TODO self.queue.append((lambda p : p.play_from_discard))
+				self.cost = [RESOURCE_LOOM,RESOURCE_LOOM]
+			else:
+				player.add_points(POINTS_WONDER,7)
+				self.all_done = True
+		else: #B Side
+			if self.stages_completed == 0:
+				player.add_points(POINTS_WONDER,2)
+				#TODO self.queue.append((lambda p : p.play_from_discard))
+				self.cost = [RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK]
+			elif self.stages_completed == 1:
+				player.add_points(POINTS_WONDER,1)
+				#TODO self.queue.append((lambda p : p.play_from_discard))
+				self.cost = [RESOURCE_GLASS,RESOURCE_PAPYRUS,RESOURCE_LOOM]
+			else:	
+				#TODO self.queue.append((lambda p : p.play_from_discard))
+				self.all_done = True
+
+class Alexandria(Wonder):
+	def __init__(self,player):
+		super().__init__()
+		player.add_resource(RESOURCE_GLASS)
+		if self.side == "A":
+			self.cost = [RESOURCE_STONE,RESOURCE_STONE]
+		else:
+			self.cost = [RESOURCE_BRICK,RESOURCE_BRICK]
+
+	def effect(self, player):
+		if self.side == "A":
+			if self.stages_completed == 0:
+				player.add_points(POINTS_WONDER,3)
+				self.cost = [RESOURCE_ORE,RESOURCE_ORE]
+			elif self.stages_completed == 1:
+				player.add_free_conditional_resource(COLOR_BROWN)
+				self.cost = [RESOURCE_GLASS,RESOURCE_GLASS]
+			else:
+				player.add_points(POINTS_WONDER,7)
+				self.all_done = True
+		else: #B Side
+			if self.stages_completed == 0:
+				player.add_free_conditional_resource(COLOR_BROWN)
+				self.cost = [RESOURCE_WOOD,RESOURCE_WOOD]
+			elif self.stages_completed == 1:
+				player.add_free_conditional_resource(COLOR_GREY)
+				self.cost = [RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE]
+			else:
+				player.add_points(POINTS_WONDER,7)
+				self.all_done = True
+		self.stages_completed += 1
+
+class Rhodos(Wonder):
+	def __init__(self,player):
+		super().__init__()
 		player.add_resource(RESOURCE_PAPYRUS)
 		if self.side == "A":
-			self.id = 11
-			self.stages.append(Wonder_Stage([RESOURCE_WOOD,RESOURCE_WOOD],lambda p : p.add_points(POINTS_WONDER,3)))
-			self.stages.append(Wonder_Stage([RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK],lambda p : p.add_shields(2)))
-			self.stages.append(Wonder_Stage([RESOURCE_ORE,RESOURCE_ORE,RESOURCE_ORE,RESOURCE_ORE],lambda p : p.add_points(POINTS_WONDER,7)))
-			
-		else: #side == "B"
-			self.id = 12
-			self.stages.append(Wonder_Stage([RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE],lambda w: w.add_multiple(player,3,3,1)))
-			self.stages.append(Wonder_Stage([RESOURCE_ORE,RESOURCE_ORE,RESOURCE_ORE,RESOURCE_ORE],lambda w: w.add_multiple(player,4,4,1)))
-			
-	
-	
-	
+			self.cost = [RESOURCE_WOOD,RESOURCE_WOOD]
+		else:
+			self.cost = [RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE]
+	def effect(self, player):
+		if self.side == "A":
+			if self.stages_completed == 0:
+				player.add_points(POINTS_WONDER,3)
+				self.cost = [RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK]
+			elif self.stages_completed == 1:
+				player.add_shields(2)
+				self.cost = [RESOURCE_ORE,RESOURCE_ORE,RESOURCE_ORE,RESOURCE_ORE]
+			else:
+				player.add_points(POINTS_WONDER,7)
+				self.all_done = True
+		else: #B Side
+			if self.stages_completed == 0:
+				player.add_points(POINTS_WONDER,3)
+				player.add_resource(RESOURCE_GOLD,3)
+				player.add_shields(1)
+				self.cost = [RESOURCE_ORE,RESOURCE_ORE,RESOURCE_ORE,RESOURCE_ORE]
+			else:
+				player.add_points(POINTS_WONDER,4)
+				player.add_resource(RESOURCE_GOLD,4)
+				player.add_shields(1)
+				self.all_done = True
+		self.stages_completed += 1
+
 	

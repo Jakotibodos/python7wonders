@@ -3,6 +3,7 @@ from common import *
 from random import randint, choice, shuffle
 from Wonders import Wonder
 from Cards import *
+from Wonders import *
 
 discard_pile = []
 queue = []
@@ -56,20 +57,10 @@ def play_turn(player):
     player.show_available_cards() #TODO
     card = select_card(player) #Add card count at this stage
     card.effect(player)
+    #TODO
     if hasattr(card,"effect_2"): #For cards that give coins depending on card counts
         add_effect_to_queue(card.effect_2)
 
-"""
-def add_effect_to_queue(player,name):
-    if name == "Vineyard":
-        queue.insert(0,(lambda p : p.add_coins_per_card(1,COLOR_BROWN,True,True,True),player))
-    elif name == "Bazar":
-        queue.insert(0,(lambda p : p.add_coins_per_card(2,COLOR_GREY,True,True,True),player))
-    elif name == "Halikarnassos":
-        if player.wonder.side == "B":
-            player.add_resource(RESOURCE_GOLD,2-player.wonder.stages_completed)
-        queue.append((lambda p : p.play_card_from_discard(),player))
-"""
 
 def deck_setup_age_1(player_count):
     deck = []
@@ -126,16 +117,15 @@ def deck_setup_age_1(player_count):
 
 
 def players_setup(player_count = 3): #max 6
-    deck = deck_setup_age_1()
+    deck = deck_setup_age_1(player_count)
     shuffle(deck)
     # Separate the list into lists of 7 elements each
     separated_deck = [deck[i:i+7] for i in range(0, len(deck), 7)]
-
     wonders_list = ["Alexandria","Babylon","Ephesos","Gizah","Halikarnassos","Rhodos"]
     playerlist = []
     for i in range(player_count):
-        player = Player("player "+str(i))
-        player.set_wonder(Wonder(wonders_list.pop(randint(0,5)),choice(["A","B"]),player)) 
+        player = Player("player "+str(i)) 
+        set_wonder(player,wonders_list)
         player.hand = separated_deck[i]
         playerlist.append(player)
     for i in range(player_count):
@@ -144,8 +134,28 @@ def players_setup(player_count = 3): #max 6
 
     return playerlist
 
+def set_wonder(player,wonders_list):
+    wonder_name = wonders_list.pop(randint(0,len(wonders_list)-1))
+    if wonder_name == "Alexandria":
+        wonder = Alexandria(player)
+    elif wonder_name == "Babylon":
+        wonder = Babylon(player)
+    elif wonder_name == "Ephesos":
+        wonder = Ephesos(player)
+    elif wonder_name == "Gizah":
+        wonder = Gizah(player)
+    elif wonder_name == "Halikarnassos":
+        wonder = Halikarnassos(player,queue)
+    elif wonder_name == "Rhodos":
+        wonder = Rhodos(player)
+    else:
+        wonder = Wonder()
+
+    player.set_wonder(wonder)
+
 
 
 if __name__ == "__main__":
-    
-    main()
+    players = players_setup(3)
+    players[0].show_available_cards()
+    #main()

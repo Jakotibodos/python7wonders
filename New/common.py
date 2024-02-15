@@ -64,6 +64,7 @@ ANSI = {
 	COLOR_RED : "\033[91m",
 	COLOR_PURPLE : "\033[95m",
 	COLOR_WONDER : "\033[96m",
+	"unavailable" : "\033[90m",
 	"default" : "\033[0m"
 }
 
