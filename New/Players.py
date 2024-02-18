@@ -67,7 +67,8 @@ class Player:
 			COLOR_YELLOW:0,
 			COLOR_BLUE:0,
 			COLOR_GREEN:0,
-			COLOR_PURPLE:0
+			COLOR_PURPLE:0,
+			COLOR_WONDER:0
 		}
 		#If True, player can play the last card of an age instead of discarding it
 		#Still has to pay cost (can also use it to complete wonder or discard for 3 coins)
@@ -185,21 +186,54 @@ class Player:
 		print(f"{ANSI['default']}-------------------------------")
 		print(f"Total: {self.get_total_score()} pts")
 
+	
+	def print_hand(self):
+		print(self.hand)	
+
+	def print_tableau(self):
+		print(self.tableau)
+	def print_available_cards(self,available_cards, cost):
+		input_option = 1
+		for card,price in zip(available_cards,cost):
+			if price == 0:
+				p = ""
+			elif price == 1:
+				p = "Bank: $"
+			else:
+				p = ("East: "+"$"*price['east'] if price['east'] > 0 else "")\
+				+("     " if price['east']>0 and price['west']>0 else "")\
+				+("West: "+"$"*price['west'] if price['west'] > 0 else "")
+
+
+			print(f"[{input_option}] play ".ljust(13)+f"{str(card).ljust(26)} {p}")
+			input_option += 1
+
+			print(f"[{input_option}] discard".ljust(13)+f"{str(card)}")
+			input_option += 1
+
+		for card in self.hand:
+			if card not in available_cards: 
+				print(f"[{input_option}] discard".ljust(13)+f"{str(card)}")
+				input_option += 1
+		
+
 	def show_available_cards(self):
-		cost = []
+		available_cards, cost, unavailable_cards= [], [], []
+
+		wonder_price = self.get_price(self.wonder)
+		if not self.wonder.all_done and wonder_price != -1:
+			available_cards.append(self.wonder)
+			cost.append(wonder_price)
+
 		for card in self.hand:
 			card_price = self.get_price(card)
-			cost.append(card_price)
-			if card_price != -1:
-				print(card)
+			if card_price == -1:
+				unavailable_cards.append(card)
 			else:
-				card.print_unavailable()
+				available_cards.append(card)
+				cost.append(card_price)
 			
-		#TODO
-			
-		return 
-	
-
+		return available_cards, cost, unavailable_cards
 	
 
 #returns the cost in gold of buying this card

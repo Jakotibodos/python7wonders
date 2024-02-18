@@ -32,7 +32,7 @@ class LumberYard(Card):
 	def __init__(self, id):
 		super().__init__(id,"Lumber Yard",COLOR_BROWN,1,None)
 	
-	def effect(player):
+	def effect(self,player):
 		player.add_resource(RESOURCE_WOOD)
 
 class StonePit(Card):

@@ -9,6 +9,12 @@ class Wonder:
 		self.stages_completed = 0
 		self.stages = []
 		self.all_done = False
+		self.color = COLOR_WONDER
+	
+	def __str__(self) -> str:
+		return f"{ANSI[COLOR_WONDER]}{self.name} stage {self.stages_completed+1}\033[0m"
+	def __repr__(self) -> str:
+		return f"{ANSI[COLOR_WONDER]}{self.name} stage {self.stages_completed+1}\033[0m"
 	
 	def get_cost(self):
 		return self.cost
@@ -17,6 +23,7 @@ class Wonder:
 class Ephesos(Wonder):
 	def __init__(self,player):
 		super().__init__()
+		self.name = "Ephesos"
 		player.add_resource(RESOURCE_PAPYRUS)
 		self.cost = [RESOURCE_STONE,RESOURCE_STONE]
 	
@@ -44,10 +51,12 @@ class Ephesos(Wonder):
 				player.add_points(POINTS_WONDER,5)
 				player.add_resource(RESOURCE_GOLD,4)
 				self.all_done = True
+		self.stages_completed += 1
 
 class Babylon(Wonder):
 	def __init__(self,player):
 		super().__init__()
+		self.name = "Babylon"
 		player.add_resource(RESOURCE_BRICK)
 		if self.side == "A":
 			self.cost = [RESOURCE_BRICK,RESOURCE_BRICK]
@@ -75,10 +84,12 @@ class Babylon(Wonder):
 			else:
 				player.add_science("any")
 				self.all_done = True
+		self.stages_completed += 1
 
 class Gizah(Wonder):
 	def __init__(self,player):
 		super().__init__()
+		self.name = "Gizah"
 		player.add_resource(RESOURCE_STONE)
 		if self.side == "A":
 			self.cost = [RESOURCE_STONE,RESOURCE_STONE]
@@ -109,11 +120,13 @@ class Gizah(Wonder):
 			else:
 				player.add_points(POINTS_WONDER,7)
 				self.all_done = True
+		self.stages_completed += 1
 
 #TODO: implement play from discard
 class Halikarnassos(Wonder):
 	def __init__(self,player,queue):
 		super().__init__()
+		self.name = "Halikarnassos"
 		player.add_resource(RESOURCE_LOOM)
 		self.queue = queue
 		if self.side == "A":
@@ -145,11 +158,14 @@ class Halikarnassos(Wonder):
 			else:	
 				#TODO self.queue.append((lambda p : p.play_from_discard))
 				self.all_done = True
+		self.stages_completed += 1
 
 class Alexandria(Wonder):
 	def __init__(self,player):
 		super().__init__()
+		self.name = "Alexandria"
 		player.add_resource(RESOURCE_GLASS)
+		
 		if self.side == "A":
 			self.cost = [RESOURCE_STONE,RESOURCE_STONE]
 		else:
@@ -181,6 +197,7 @@ class Alexandria(Wonder):
 class Rhodos(Wonder):
 	def __init__(self,player):
 		super().__init__()
+		self.name = "Rhodos"
 		player.add_resource(RESOURCE_PAPYRUS)
 		if self.side == "A":
 			self.cost = [RESOURCE_WOOD,RESOURCE_WOOD]
