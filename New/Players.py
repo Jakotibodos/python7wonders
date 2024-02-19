@@ -19,6 +19,7 @@ from random import choice
 class Player:
 	def __init__(self, name):
 		self.name = name
+		self.under_wonder = [] #for cards put under wonders
 		self.tableau = [] # all the players played cards
 		self.hand = None
 		self.war_losses = 0 # war wins/losses
@@ -67,14 +68,13 @@ class Player:
 			COLOR_YELLOW:0,
 			COLOR_BLUE:0,
 			COLOR_GREEN:0,
-			COLOR_PURPLE:0,
-			COLOR_WONDER:0
+			COLOR_PURPLE:0
 		}
 		#If True, player can play the last card of an age instead of discarding it
 		#Still has to pay cost (can also use it to complete wonder or discard for 3 coins)
-		self.double_last_cards = False 
+		self.has_double_last_cards = False 
 
-		self.endgame_scoring_functions = [] #For cards that give points at the end of the game
+		self.endgame_scoring_functions = [lambda p: p.score_coins(),lambda p: p.score_science()] #For cards that give points at the end of the game
 	
 	def set_personality(self, persona):
 		self.personality = persona
@@ -109,7 +109,32 @@ class Player:
 	def add_points(self,category,amount):
 		self.points[category] += amount
 		
+	def score_coins(self):
+		self.points[POINTS_GOLD] += self.resources[RESOURCE_GOLD]//3
 	
+	def score_science(self):
+		scores = []
+		anys = self.science["any"]
+		if anys == 0:
+			self.add_points(POINTS_GREEN,_score_science(self.science))
+		elif anys == 1:
+			for symbol in [SCIENCE_COMPASS, SCIENCE_TABLET, SCIENCE_GEAR]:
+				science = self.science.copy()
+				science[symbol] += 1
+				scores.append(_score_science(science))
+			self.add_points(POINTS_GREEN,max(scores))
+		else: #2 anys
+			for symbol_1 in [SCIENCE_COMPASS, SCIENCE_TABLET, SCIENCE_GEAR]:
+				for symbol_2 in [SCIENCE_COMPASS, SCIENCE_TABLET, SCIENCE_GEAR]:
+					science = self.science.copy()
+					science[symbol_1] += 1
+					science[symbol_2] += 1
+					scores.append(_score_science(science))
+			self.add_points(POINTS_GREEN,max(scores))
+
+
+
+	 
 	#For coins only, points are at the end
 	#Bazar and Vineyard (that use this) should be put at the end of queue when played	
 	def add_coins_per_card(self,amount,card_color,me=True,east=False,west=False):
@@ -155,13 +180,8 @@ class Player:
 	def add_science(self, symbol):
 		self.science[symbol]+=1 #"any" for a conditional science card/wonder"
 
-	def shipowners_guild(self):
-		self.add_endgame_function(self.add_points_per_card(1,POINTS_PURPLE,COLOR_BROWN))
-		self.add_endgame_function(self.add_points_per_card(1,POINTS_PURPLE,COLOR_GREY))
-		self.add_endgame_function(self.add_points_per_card(1,POINTS_PURPLE,COLOR_PURPLE))
-
 	def can_double_last_cards(self):
-		self.double_last_cards = True
+		self.has_double_last_cards = True
 
 	def get_total_score(self):
 		return sum(self.points.values())
@@ -192,6 +212,29 @@ class Player:
 
 	def print_tableau(self):
 		print(self.tableau)
+
+	def war(self,points_given):
+		if self.west_player.shields > self.shields:
+			print(f"{self.name} loses against {self.west_player.name}")
+			self.war_losses += 1
+			self.points[POINTS_RED] -= 1
+		elif self.west_player.shields < self.shields:
+			print(f"{self.name} wins against {self.west_player.name}")
+			self.points[POINTS_RED] += points_given
+		else:
+			print(f"{self.name} ties against {self.west_player.name}")
+
+
+
+		if self.east_player.shields > self.shields:
+			self.war_losses += 1
+			self.points[POINTS_RED] -= 1
+			print(f"{self.name} loses against {self.east_player.name}")
+		elif self.east_player.shields < self.shields:
+			print(f"{self.name} wins against {self.east_player.name}")
+			self.points[POINTS_RED] += points_given
+		else:
+			print(f"{self.name} ties against {self.east_player.name}")
 	def print_available_cards(self,available_cards, cost):
 		input_option = 1
 		for card,price in zip(available_cards,cost):
@@ -216,14 +259,53 @@ class Player:
 				print(f"[{input_option}] discard".ljust(13)+f"{str(card)}")
 				input_option += 1
 		
+		
+	def print_wonder_option(self,price):
+		if price == 0:
+			p = ""
+		elif price == 1:
+			p = "Bank: $"
+		else:
+			p = ("East: "+"$"*price['east'] if price['east'] > 0 else "")\
+			+("     " if price['east']>0 and price['west']>0 else "")\
+			+("West: "+"$"*price['west'] if price['west'] > 0 else "")
+		
+		print(f"[0] play ".ljust(13)+f"{str(self.wonder).ljust(26)} {p}")
+	
+		
+	def choose_card_for_wonder(self):
+		input_option = 1
+		print("You've selected your wonder, please choose a card to play under your wonder: ")
+		for card in self.hand:
+			print(f"[{input_option}] {str(card)}")
+			input_option += 1
+
+		self.under_wonder.append(self.hand.pop(int(input())-1))
+
+	def play_from_discard(self,discard_pile):
+		if not discard_pile: #empty discard pile
+			print(f"{self.name}, there are no cards in the discard pile\n")
+			return
+		else:
+			print(f"{self.name}, You can play a card from the discard pile for free")
+			input_option = 1
+			for card in discard_pile:
+				print(f"[{input_option}] {str(card)}")
+				input_option += 1
+			selection = int(input("Choose a card: ")) 
+			self.play_card(discard_pile.pop(selection-1))
+			
+
+	def play_card(self,card):
+		self.tableau.append(card)
+		card.effect(self)
+		self.color_count[card.color] += 1
+	
+	def play_wonder(self):
+		self.wonder.effect(self)
 
 	def show_available_cards(self):
 		available_cards, cost, unavailable_cards= [], [], []
-
-		wonder_price = self.get_price(self.wonder)
-		if not self.wonder.all_done and wonder_price != -1:
-			available_cards.append(self.wonder)
-			cost.append(wonder_price)
 
 		for card in self.hand:
 			card_price = self.get_price(card)
@@ -303,10 +385,11 @@ class Player:
 		else: #need to buy brown and grey
 			#Here we know there is at least one grey resource missing
 			grey_price = self.buy_grey_from_neighbors(new_cost_grey)
-
+			if grey_price == -1: #if you can't buy grey resources from neighbors, then you can't buy the card
+				return -1
 			#Generates all combinations of conditional resources
 			for combo in list(product(*self.conditional_resources)): 
-
+				combo = list(combo)
 				#For each combination, check if can be paid with those resources
 				new_new_cost_brown = []
 				for resource in new_cost_brown:
@@ -321,6 +404,7 @@ class Player:
 				else:
 					brown_price = self.buy_brown_from_neighbors(new_new_cost_brown) 
 					if brown_price == {'east':self.east_trade_prices,'west':0} or brown_price == {'east':0,'west':self.west_trade_prices}: #it doesn't get better than this
+						#print("brown: ",brown_price,"grey: ",grey_price)
 						return {'east':brown_price["east"]+grey_price["east"],'west':brown_price["west"]+grey_price["west"]} #Combine grey and brown prices
 					elif brown_price != -1:
 						possible_prices.append({'east':brown_price["east"]+grey_price["east"],'west':brown_price["west"]+grey_price["west"]}) #Combine grey and brown prices
@@ -332,7 +416,7 @@ class Player:
 		if not hasattr(card,"prechains"):
 			return False
 		for c in card.prechains:
-			if self.tableau.contains(c):
+			if c in self.tableau:
 				return True
 		return False
 	
@@ -606,6 +690,7 @@ class Player:
 
 
 def find_min_price(prices):
+
 	if len(prices) == 0:
 		return -1
 	
@@ -618,3 +703,11 @@ def find_min_price(prices):
 			sum_price = sum(price.values())
 
 	return min_price
+
+def _score_science(science):
+	score = 0				
+	score += science[SCIENCE_GEAR]**2
+	score += science[SCIENCE_COMPASS]**2
+	score += science[SCIENCE_TABLET]**2
+	score += min([science[SCIENCE_TABLET],science[SCIENCE_GEAR],science[SCIENCE_COMPASS]])*7
+	return score

@@ -52,6 +52,7 @@ class Ephesos(Wonder):
 				player.add_resource(RESOURCE_GOLD,4)
 				self.all_done = True
 		self.stages_completed += 1
+		player.choose_card_for_wonder()
 
 class Babylon(Wonder):
 	def __init__(self,player):
@@ -85,6 +86,7 @@ class Babylon(Wonder):
 				player.add_science("any")
 				self.all_done = True
 		self.stages_completed += 1
+		player.choose_card_for_wonder()
 
 class Gizah(Wonder):
 	def __init__(self,player):
@@ -121,27 +123,30 @@ class Gizah(Wonder):
 				player.add_points(POINTS_WONDER,7)
 				self.all_done = True
 		self.stages_completed += 1
+		player.choose_card_for_wonder()
 
-#TODO: implement play from discard
+
 class Halikarnassos(Wonder):
-	def __init__(self,player,queue):
+	def __init__(self,player,queue,discard_pile):
 		super().__init__()
 		self.name = "Halikarnassos"
 		player.add_resource(RESOURCE_LOOM)
 		self.queue = queue
+		self.discard_pile = discard_pile
+		self.side = "B"
 		if self.side == "A":
 			self.cost = [RESOURCE_BRICK,RESOURCE_BRICK]
 		else:
-			self.cost = [RESOURCE_ORE,RESOURCE_ORE]
+			self.cost = None #2 ores
 	
-	#TODO: implement play from discard
+
 	def effect(self, player):
 		if self.side == "A":
 			if self.stages_completed == 0:
 				player.add_points(POINTS_WONDER,3)
 				self.cost = [RESOURCE_ORE,RESOURCE_ORE,RESOURCE_ORE]
 			elif self.stages_completed == 1:
-				#TODO self.queue.append((lambda p : p.play_from_discard))
+				self.queue.append((lambda p : p.play_from_discard(self.discard_pile),player))
 				self.cost = [RESOURCE_LOOM,RESOURCE_LOOM]
 			else:
 				player.add_points(POINTS_WONDER,7)
@@ -149,16 +154,17 @@ class Halikarnassos(Wonder):
 		else: #B Side
 			if self.stages_completed == 0:
 				player.add_points(POINTS_WONDER,2)
-				#TODO self.queue.append((lambda p : p.play_from_discard))
+				self.queue.append((lambda p : p.play_from_discard(self.discard_pile),player))
 				self.cost = [RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK]
 			elif self.stages_completed == 1:
 				player.add_points(POINTS_WONDER,1)
-				#TODO self.queue.append((lambda p : p.play_from_discard))
+				self.queue.append((lambda p : p.play_from_discard(self.discard_pile),player))
 				self.cost = [RESOURCE_GLASS,RESOURCE_PAPYRUS,RESOURCE_LOOM]
 			else:	
-				#TODO self.queue.append((lambda p : p.play_from_discard))
+				self.queue.append((lambda p : p.play_from_discard(self.discard_pile),player))
 				self.all_done = True
 		self.stages_completed += 1
+		player.choose_card_for_wonder()
 
 class Alexandria(Wonder):
 	def __init__(self,player):
@@ -193,6 +199,7 @@ class Alexandria(Wonder):
 				player.add_points(POINTS_WONDER,7)
 				self.all_done = True
 		self.stages_completed += 1
+		player.choose_card_for_wonder()
 
 class Rhodos(Wonder):
 	def __init__(self,player):
@@ -226,5 +233,6 @@ class Rhodos(Wonder):
 				player.add_shields(1)
 				self.all_done = True
 		self.stages_completed += 1
+		player.choose_card_for_wonder()
 
 	

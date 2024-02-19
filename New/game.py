@@ -9,33 +9,49 @@ discard_pile = []
 queue = []
 
 def main():
-    #TODO
     nbplayers = int(input("Enter number of players: "))
-    while (nbplayers < 3 and nbplayers > 6):
+    while (nbplayers < 3 or nbplayers > 6):
         print("Player count must be between 3 and 6")
         nbplayers = int(input("\nEnter number of player: "))
 
     players = players_setup(nbplayers) #Includes wonder setup
 
     for age in range(1,4): #each age
+        assign_cards(players,age) #Create decks and assign them to players
+
         for turn in range(6):
             for player in players:
-                player.play_turn() 
+                print()
+                play_turn(player) 
             if turn == 5: #last turn
-                if player.has_double_last_cards():
-                    player.play_turn()
+                if player.has_double_last_cards:
+                    print()
+                    play_turn(player)
                 else:
                     discard_last_card(player)
 
-            for effect in queue: #For cards that give coins depending on card counts (and Halikarnassos discard play)
-                effect() #maybe these will be (effect,player) in queue
-            queue = []
+            for effect,player in queue: #For cards that give coins depending on card counts (and Halikarnassos discard play)
+                effect(player)
+            queue.clear()
             
-            switch_hands(players)
+            switch_hands(players,age)
 
+        print("war time")
         for player in players:
             player.war((age*2)-1) #1, 3 and 5
-                    
+        
+    #game end
+    for player in players:
+        for endgame_function in player.endgame_scoring_functions:
+            endgame_function(player)
+
+        player.print_tableau()
+        print()
+        player.print_score()
+        print()
+
+    
+
 def switch_hands(playerlist,age):
     player = playerlist[0]
     temp_hand = player.hand
@@ -53,33 +69,44 @@ def switch_hands(playerlist,age):
 
 def play_turn(player):
     available_cards, cost, unavailable_cards = player.show_available_cards()
+    
+    wonder_available = False
+    wonder_price = player.get_price(player.wonder)
+    if not player.wonder.all_done and wonder_price != -1:
+        wonder_available = True
+        player.print_wonder_option(wonder_price)
+   
+
     player.print_available_cards(available_cards,cost)
     
     #TODO Gym action space
-    
+
     card_selected = False
     while(not card_selected):
         try:
             input_option = int(input(f"{player.name}'s turn: "))
-            if input_option < 1 or input_option > len(available_cards)*2+(len(player.hand)-len(available_cards)):
+            if input_option < 1-wonder_available or input_option > len(available_cards)*2+(len(player.hand)-len(available_cards)):
                 print("Invalid option")
             else:
                 card_selected = True
         except ValueError:
             print("Invalid option")
     
-    if input_option<=len(available_cards)*2:
+    if input_option == 0:
+        player.play_wonder()
+        return
+    elif input_option<=len(available_cards)*2:
         if input_option % 2 == 1: #play card
             card = available_cards[input_option//2]
-            player.tableau.append(card)
-            card.effect(player)
-            player.color_count[card.color] += 1
+            player.play_card(card)
         else: #discard card (that could be played)
             card = available_cards[input_option//2 - 1]
             player.resources[RESOURCE_GOLD] += 3
+            discard_pile.append(card)
     else:	#discard cards (that cannot be played)
         card = unavailable_cards[input_option-len(available_cards)*2-1]
         player.resources[RESOURCE_GOLD] += 3
+        discard_pile.append(card)
     
     if not isinstance(card, Wonder):
         player.hand.remove(card)
@@ -98,8 +125,6 @@ def players_setup(player_count = 3): #max 6
         player = Player(input(f"Name of player {i}: ")) 
         set_wonder(player,wonders_list)
         playerlist.append(player)
-
-    assign_cards(playerlist, age = 1)
     
     for i in range(player_count):
         playerlist[i].set_east_player(playerlist[i-1])
@@ -107,7 +132,7 @@ def players_setup(player_count = 3): #max 6
 
     return playerlist
 
-def assign_cards(players_list, age):
+def assign_cards(players_list, age=1):
     if age == 1:
         deck = deck_setup_age_1(len(players_list))
     elif age == 2:
@@ -118,11 +143,14 @@ def assign_cards(players_list, age):
     shuffle(deck)
     # Separate the list into lists of 7 elements each
     separated_deck = [deck[i:i+7] for i in range(0, len(deck), 7)]
+    i = 0
     for player in players_list:
         player.hand = separated_deck[i]
+        i += 1
 
 def set_wonder(player,wonders_list):
     wonder_name = wonders_list.pop(randint(0,len(wonders_list)-1))
+    wonder_name = "Halikarnassos"
     if wonder_name == "Alexandria":
         wonder = Alexandria(player)
     elif wonder_name == "Babylon":
@@ -132,7 +160,7 @@ def set_wonder(player,wonders_list):
     elif wonder_name == "Gizah":
         wonder = Gizah(player)
     elif wonder_name == "Halikarnassos":
-        wonder = Halikarnassos(player,queue)
+        wonder = Halikarnassos(player,queue,discard_pile)
     elif wonder_name == "Rhodos":
         wonder = Rhodos(player)
     else:
@@ -140,7 +168,60 @@ def set_wonder(player,wonders_list):
 
     player.set_wonder(wonder)
 
+def deck_setup_age_3(player_count):
+    deck = []
+    purple_cards = [WorkersGuild(119),CraftmensGuild(120),TradersGuild(121),\
+                    PhilosophersGuild(122),SpiesGuild(123),StrategistsGuild(124),\
+                    ShipownersGuild(125),ScientistsGuild(126),MagistratesGuild(127),BuildersGuild(128)] 
+    shuffle(purple_cards) #Not all of them are used. Only #player+2
 
+    deck.append(Pantheon(85))  #7 blue points
+    deck.append(Gardens(86))  #5 blue points
+    deck.append(TownHall(87))  #6 blue points
+    deck.append(Palace(88))  #8 blue points
+    deck.append(Senate(89))  #6 blue points
+    deck.append(Haven(90))  # point + coin per brown card
+    deck.append(Lighthouse(91))  #point + coin per yellow card
+    deck.append(Arena(92))  #3 coins, 1 point per wonder
+    deck.append(Fortifications(93))  #3 shields
+    deck.append(Arsenal(94))  #3 shields
+    deck.append(SiegeWorkshop(95))  #3 shields
+    deck.append(Lodge(96))  #Compass
+    deck.append(Observatory(97))  #Gear
+    deck.append(University(98))  #Tablet
+    deck.append(Academy(99)) #Compass
+    deck.append(Study(100))  #Gear
+    deck.append(purple_cards[0])
+    deck.append(purple_cards[1])
+    deck.append(purple_cards[2])
+    deck.append(purple_cards[3])
+    deck.append(purple_cards[4])
+    if player_count >= 4:
+        deck.append(Gardens(101))  #5 blue points
+        deck.append(Haven(102))  #point + coin per brown card
+        deck.append(ChamberOfCommerce(103))  #2 points + 2 coins per grey card
+        deck.append(Circus(104))  #3 shields
+        deck.append(Arsenal(105))  #3 shields
+        deck.append(University(106)) #Tablet
+        deck.append(purple_cards[5])
+        if player_count >= 5:
+            deck.append(TownHall(107))  #6 blue points
+            deck.append(Senate(108))  #6 blue points
+            deck.append(Arena(109))  #1 points + 3 coin per wonder
+            deck.append(Circus(110))  #3 shields
+            deck.append(SiegeWorkshop(111))  #3 shields
+            deck.append(Study(112)) #gear
+            deck.append(purple_cards[6])
+            if player_count >= 6:
+                deck.append(Pantheon(113)) #7 blue points
+                deck.append(TownHall(114))  #6 blue points
+                deck.append(Lighthouse(115))  #point + coin per yellow card
+                deck.append(ChamberOfCommerce(116))  #2 points + 2 coins per grey card
+                deck.append(Circus(117))  #3 shields
+                deck.append(Lodge(118)) # Compass
+                deck.append(purple_cards[7])
+                 
+    return deck
 def deck_setup_age_2(player_count):
     deck = []
     deck.append(Sawmill(43))  #2 wood
@@ -181,13 +262,13 @@ def deck_setup_age_2(player_count):
             deck.append(Stables(76)) #2 shields
             deck.append(Laboratory(77))  #gear
             if player_count >= 6:
-                deck.append(TreeFarm(36)) # wood\bricks
-                deck.append(Mine(37))  # stone\ore
-                deck.append(Glassworks(38))  #glass
-                deck.append(Press(39))  #papyrus
-                deck.append(Loom(40))  #loom
-                deck.append(MarketPlace(41))
-                deck.append(Theatre(42))
+                deck.append(Temple(78)) # 3 blue points
+                deck.append(Forum(79)) 
+                deck.append(Caravansery(80))  #Free brown resource
+                deck.append(Vineyard(81))  #Gold for brown cards <^>
+                deck.append(TrainingGround(82))  #2 shields
+                deck.append(ArcheryRange(83)) #2 shields
+                deck.append(Library(84)) #tablet
                  
     return deck
 
@@ -243,11 +324,4 @@ def deck_setup_age_1(player_count):
 
 
 if __name__ == "__main__":
-    players = players_setup(3)
-    players[0].print_hand()
-    play_turn(players[0])
-    players[0].print_hand()
-    players[0].print_tableau()
-    print(players[0].resources)
-    players[0].print_score()
-    #main()
+    main()

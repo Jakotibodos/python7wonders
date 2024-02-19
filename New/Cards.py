@@ -420,7 +420,7 @@ class Lighthouse(Card):
         super().__init__(id,"Lighthouse",COLOR_YELLOW,3,[RESOURCE_STONE,RESOURCE_GLASS],["Caravansery"])
 
     def effect(self,player):
-        player.add_endgame_function(lambda p : p.add_points_per_card(1,POINTS_YELLOW,COLOR_YELLOW))
+        player.endgame_scoring_functions.append(lambda p : p.add_points_per_card(1,POINTS_YELLOW,COLOR_YELLOW))
         player.add_coins_per_card(1,COLOR_YELLOW)
 
 class Haven(Card):
@@ -428,7 +428,7 @@ class Haven(Card):
         super().__init__(id,"Haven",COLOR_YELLOW,3,[RESOURCE_WOOD,RESOURCE_ORE,RESOURCE_LOOM],["Forum"])
     
     def effect(self,player):
-        player.add_endgame_function(lambda p : p.add_points_per_card(1,POINTS_YELLOW,COLOR_BROWN))
+        player.endgame_scoring_functions.append(lambda p : p.add_points_per_card(1,POINTS_YELLOW,COLOR_BROWN))
         player.add_coins_per_card(1,COLOR_BROWN)
 
 class ChamberOfCommerce(Card):
@@ -436,7 +436,7 @@ class ChamberOfCommerce(Card):
         super().__init__(id,"Chamber of Commerce",COLOR_YELLOW,3,[RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_PAPYRUS])
     
     def effect(self,player):
-        player.add_endgame_function(lambda p : p.add_points_per_card(2,POINTS_YELLOW,COLOR_GREY))
+        player.endgame_scoring_functions.append(lambda p : p.add_points_per_card(2,POINTS_YELLOW,COLOR_GREY))
         player.add_coins_per_card(2,COLOR_GREY)
 
 class Arena(Card):
@@ -444,7 +444,7 @@ class Arena(Card):
         super().__init__(id,"Arena",COLOR_YELLOW,3,[RESOURCE_STONE,RESOURCE_STONE,RESOURCE_ORE],["Dispensary"])
     
     def effect(self,player):
-        player.add_endgame_function(lambda p : p.add_points_per_wonder(1,POINTS_YELLOW))
+        player.endgame_scoring_functions.append(lambda p : p.add_points_per_wonder(1,POINTS_YELLOW))
         player.add_coins_per_card(1,"wonder")
 
 #Red Cards
@@ -521,56 +521,56 @@ class WorkersGuild(Card) :
         super().__init__(id,"Workers Guild",COLOR_PURPLE,3,[RESOURCE_ORE,RESOURCE_ORE,RESOURCE_BRICK,RESOURCE_STONE,RESOURCE_WOOD])
 
     def effect(self,player) :
-        player.add_endgame_function(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_BROWN,False,True,True))
+        player.endgame_scoring_functions.append(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_BROWN,False,True,True))
 
 class CraftmensGuild(Card) :
     def __init__(self,id) :
         super().__init__(id,"Craftmen's Guild",COLOR_PURPLE,3,[RESOURCE_ORE,RESOURCE_ORE,RESOURCE_STONE,RESOURCE_STONE])
     
     def effect(self,player) :
-        player.add_endgame_function(lambda p : p.add_points_per_card(2,POINTS_PURPLE,COLOR_GREY,False,True,True))
+        player.endgame_scoring_functions.append(lambda p : p.add_points_per_card(2,POINTS_PURPLE,COLOR_GREY,False,True,True))
 
 class MagistratesGuild(Card) :
     def __init__(self,id) :
         super().__init__(id,"Magistrates Guild",COLOR_PURPLE,3,[RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_STONE,RESOURCE_LOOM])
 
     def effect(self,player) :
-        player.add_endgame_function(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_BLUE,False,True,True))
+        player.endgame_scoring_functions.append(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_BLUE,False,True,True))
 
 class TradersGuild(Card) :
     def __init__(self,id) :
         super().__init__(id,"Traders Guild",COLOR_PURPLE,3,[RESOURCE_GLASS,RESOURCE_LOOM,RESOURCE_PAPYRUS])
 
     def effect(self,player) :
-        player.add_endgame_function(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_YELLOW,False,True,True))
+        player.endgame_scoring_functions.append(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_YELLOW,False,True,True))
 
 class BuildersGuild(Card) :
     def __init__(self,id) :
         super().__init__(id,"Builders Guild",COLOR_PURPLE,3,[RESOURCE_STONE,RESOURCE_STONE,RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_GLASS])
 
     def effect(self,player) :
-        player.add_endgame_function(lambda p : p.add_points_per_wonder(1,POINTS_PURPLE,True,True,True))
+        player.endgame_scoring_functions.append(lambda p : p.add_points_per_wonder(1,POINTS_PURPLE,True,True,True))
 
 class SpiesGuild(Card) :
     def __init__(self,id) :
         super().__init__(id,"Spies Guild",COLOR_PURPLE,3,[RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_GLASS])
 
     def effect(self,player) :
-        player.add_endgame_function(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_RED,False,True,True))
+        player.endgame_scoring_functions.append(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_RED,False,True,True))
 
 class PhilosophersGuild(Card) :
     def __init__(self,id) :
         super().__init__(id,"Philosophers Guild",COLOR_PURPLE,3,[RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_PAPYRUS,RESOURCE_LOOM])
 
     def effect(self,player) :
-        player.add_endgame_function(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_GREEN,False,True,True))
+        player.endgame_scoring_functions.append(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_GREEN,False,True,True))
 
 class StrategistsGuild(Card) :
     def __init__(self,id) :
         super().__init__(id,"Strategists Guild",COLOR_PURPLE,3,[RESOURCE_ORE,RESOURCE_ORE,RESOURCE_STONE,RESOURCE_LOOM])
 
     def effect(self,player) :
-        player.add_endgame_function(lambda p : p.add_points(POINTS_RED,p.west_player.war_losses+p.east_player.war_losses))
+        player.endgame_scoring_functions.append(lambda p : p.add_points(POINTS_RED,p.west_player.war_losses+p.east_player.war_losses))
 
 class ScientistsGuild(Card) :
     def __init__(self,id) :
@@ -583,6 +583,6 @@ class ShipownersGuild(Card) :
     def __init__(self,id) :
         super().__init__(id,"Shipowners Guild",COLOR_PURPLE,3,[RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_GLASS,RESOURCE_PAPYRUS])
     def effect(self,player) :
-        player.add_endgame_function(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_BROWN))
-        player.add_endgame_function(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_GREY))
-        player.add_endgame_function(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_PURPLE))
+        player.endgame_scoring_functions.append(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_BROWN))
+        player.endgame_scoring_functions.append(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_GREY))
+        player.endgame_scoring_functions.append(lambda p : p.add_points_per_card(1,POINTS_PURPLE,COLOR_PURPLE))
