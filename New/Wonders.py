@@ -137,7 +137,7 @@ class Halikarnassos(Wonder):
 		if self.side == "A":
 			self.cost = [RESOURCE_BRICK,RESOURCE_BRICK]
 		else:
-			self.cost = None #2 ores
+			self.cost = [RESOURCE_ORE,RESOURCE_ORE] 
 	
 
 	def effect(self, player):

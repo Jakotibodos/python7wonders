@@ -20,9 +20,19 @@ def main():
         assign_cards(players,age) #Create decks and assign them to players
 
         for turn in range(6):
+            print("\n================================")
+            print(f"TURN {turn+1}")
+            print("================================\n")
+            temp_queue = []
             for player in players:
                 print()
-                play_turn(player) 
+                player.print_tableau()
+                print("West: "+str(player.west_trade_prices)+" East: "+str(player.east_trade_prices)+" Grey: "+str(player.grey_trade_prices))
+                print(player.conditional_resources)
+                print("Free Brown: "+str(player.free_conditional_resources[COLOR_BROWN])+" Free Grey: "+str(player.free_conditional_resources[COLOR_GREY]))
+                print(player.resources)
+                play_turn(player,temp_queue)  
+                
             if turn == 5: #last turn
                 if player.has_double_last_cards:
                     print()
@@ -30,6 +40,12 @@ def main():
                 else:
                     discard_last_card(player)
 
+            for card,player,cost in temp_queue: #normal card play queue
+                if card == "wonder":
+                    player.play_wonder(cost)
+                else:
+                    player.play_card(card,cost)
+                   
             for effect,player in queue: #For cards that give coins depending on card counts (and Halikarnassos discard play)
                 effect(player)
             queue.clear()
@@ -67,7 +83,7 @@ def switch_hands(playerlist,age):
         player.hand = temp_hand 
 
 
-def play_turn(player):
+def play_turn(player,temp_queue):
     available_cards, cost, unavailable_cards = player.show_available_cards()
     
     wonder_available = False
@@ -93,12 +109,12 @@ def play_turn(player):
             print("Invalid option")
     
     if input_option == 0:
-        player.play_wonder()
+        temp_queue.append(("wonder",player,wonder_price))
         return
     elif input_option<=len(available_cards)*2:
         if input_option % 2 == 1: #play card
             card = available_cards[input_option//2]
-            player.play_card(card)
+            temp_queue.append((card,player,cost[input_option//2]))
         else: #discard card (that could be played)
             card = available_cards[input_option//2 - 1]
             player.resources[RESOURCE_GOLD] += 3
@@ -129,7 +145,8 @@ def players_setup(player_count = 3): #max 6
     for i in range(player_count):
         playerlist[i].set_east_player(playerlist[i-1])
         playerlist[i].set_west_player(playerlist[(i+1)%player_count])
-
+        print(playerlist[i].name+"west: "+playerlist[i].west_player.name)
+    
     return playerlist
 
 def assign_cards(players_list, age=1):
@@ -146,11 +163,11 @@ def assign_cards(players_list, age=1):
     i = 0
     for player in players_list:
         player.hand = separated_deck[i]
+        print(f"{player.name}'s hand: {player.hand}")
         i += 1
 
 def set_wonder(player,wonders_list):
     wonder_name = wonders_list.pop(randint(0,len(wonders_list)-1))
-    wonder_name = "Halikarnassos"
     if wonder_name == "Alexandria":
         wonder = Alexandria(player)
     elif wonder_name == "Babylon":
@@ -167,158 +184,159 @@ def set_wonder(player,wonders_list):
         wonder = Wonder()
 
     player.set_wonder(wonder)
+    print(player.name,player.wonder.name,player.wonder.side)
 
 def deck_setup_age_3(player_count):
     deck = []
-    purple_cards = [WorkersGuild(119),CraftmensGuild(120),TradersGuild(121),\
-                    PhilosophersGuild(122),SpiesGuild(123),StrategistsGuild(124),\
-                    ShipownersGuild(125),ScientistsGuild(126),MagistratesGuild(127),BuildersGuild(128)] 
+    purple_cards = [WorkersGuild(),CraftmensGuild(),TradersGuild(),\
+                    PhilosophersGuild(),SpiesGuild(),StrategistsGuild(),\
+                    ShipownersGuild(),ScientistsGuild(),MagistratesGuild(),BuildersGuild()] 
     shuffle(purple_cards) #Not all of them are used. Only #player+2
 
-    deck.append(Pantheon(85))  #7 blue points
-    deck.append(Gardens(86))  #5 blue points
-    deck.append(TownHall(87))  #6 blue points
-    deck.append(Palace(88))  #8 blue points
-    deck.append(Senate(89))  #6 blue points
-    deck.append(Haven(90))  # point + coin per brown card
-    deck.append(Lighthouse(91))  #point + coin per yellow card
-    deck.append(Arena(92))  #3 coins, 1 point per wonder
-    deck.append(Fortifications(93))  #3 shields
-    deck.append(Arsenal(94))  #3 shields
-    deck.append(SiegeWorkshop(95))  #3 shields
-    deck.append(Lodge(96))  #Compass
-    deck.append(Observatory(97))  #Gear
-    deck.append(University(98))  #Tablet
-    deck.append(Academy(99)) #Compass
-    deck.append(Study(100))  #Gear
+    deck.append(Pantheon())  #7 blue points
+    deck.append(Gardens())  #5 blue points
+    deck.append(TownHall())  #6 blue points
+    deck.append(Palace())  #8 blue points
+    deck.append(Senate())  #6 blue points
+    deck.append(Haven())  # point + coin per brown card
+    deck.append(Lighthouse())  #point + coin per yellow card
+    deck.append(Arena())  #3 coins, 1 point per wonder
+    deck.append(Fortifications())  #3 shields
+    deck.append(Arsenal())  #3 shields
+    deck.append(SiegeWorkshop())  #3 shields
+    deck.append(Lodge())  #Compass
+    deck.append(Observatory())  #Gear
+    deck.append(University())  #Tablet
+    deck.append(Academy()) #Compass
+    deck.append(Study())  #Gear
     deck.append(purple_cards[0])
     deck.append(purple_cards[1])
     deck.append(purple_cards[2])
     deck.append(purple_cards[3])
     deck.append(purple_cards[4])
     if player_count >= 4:
-        deck.append(Gardens(101))  #5 blue points
-        deck.append(Haven(102))  #point + coin per brown card
-        deck.append(ChamberOfCommerce(103))  #2 points + 2 coins per grey card
-        deck.append(Circus(104))  #3 shields
-        deck.append(Arsenal(105))  #3 shields
-        deck.append(University(106)) #Tablet
+        deck.append(Gardens())  #5 blue points
+        deck.append(Haven())  #point + coin per brown card
+        deck.append(ChamberOfCommerce())  #2 points + 2 coins per grey card
+        deck.append(Circus())  #3 shields
+        deck.append(Arsenal())  #3 shields
+        deck.append(University()) #Tablet
         deck.append(purple_cards[5])
         if player_count >= 5:
-            deck.append(TownHall(107))  #6 blue points
-            deck.append(Senate(108))  #6 blue points
-            deck.append(Arena(109))  #1 points + 3 coin per wonder
-            deck.append(Circus(110))  #3 shields
-            deck.append(SiegeWorkshop(111))  #3 shields
-            deck.append(Study(112)) #gear
+            deck.append(TownHall())  #6 blue points
+            deck.append(Senate())  #6 blue points
+            deck.append(Arena())  #1 points + 3 coin per wonder
+            deck.append(Circus())  #3 shields
+            deck.append(SiegeWorkshop())  #3 shields
+            deck.append(Study()) #gear
             deck.append(purple_cards[6])
             if player_count >= 6:
-                deck.append(Pantheon(113)) #7 blue points
-                deck.append(TownHall(114))  #6 blue points
-                deck.append(Lighthouse(115))  #point + coin per yellow card
-                deck.append(ChamberOfCommerce(116))  #2 points + 2 coins per grey card
-                deck.append(Circus(117))  #3 shields
-                deck.append(Lodge(118)) # Compass
+                deck.append(Pantheon()) #7 blue points
+                deck.append(TownHall())  #6 blue points
+                deck.append(Lighthouse())  #point + coin per yellow card
+                deck.append(ChamberOfCommerce())  #2 points + 2 coins per grey card
+                deck.append(Circus())  #3 shields
+                deck.append(Lodge()) # Compass
                 deck.append(purple_cards[7])
                  
     return deck
 def deck_setup_age_2(player_count):
     deck = []
-    deck.append(Sawmill(43))  #2 wood
-    deck.append(Quarry(44))  #2 stone
-    deck.append(Brickyard(45))  #2 bricks
-    deck.append(Foundry(46))  #2 ore
-    deck.append(Loom(47))  # loom
-    deck.append(Glassworks(48))  # glass
-    deck.append(Press(49))  #papyrus
-    deck.append(Aqueduct(50))  #5 blue points
-    deck.append(Temple(51))  #3 blue points
-    deck.append(Statue(52))  #4 blue points
-    deck.append(Barracks(53))  #4 blue points
-    deck.append(Forum(54))  #Free grey resource
-    deck.append(Caravansery(55))  #free brown resource
-    deck.append(Vineyard(56, queue))  #Gold for brown cards <^>
-    deck.append(Walls(57)) #2 shields
-    deck.append(Stables(58))  #2 shields
-    deck.append(ArcheryRange(59))  #2 shields
-    deck.append(Dispensary(60)) #compass
-    deck.append(Laboratory(61)) #gear
-    deck.append(Library(62))  #tablet
-    deck.append(School(63))  #tablet
+    deck.append(Sawmill())  #2 wood
+    deck.append(Quarry())  #2 stone
+    deck.append(Brickyard())  #2 bricks
+    deck.append(Foundry())  #2 ore
+    deck.append(Loom())  # loom
+    deck.append(Glassworks())  # glass
+    deck.append(Press())  #papyrus
+    deck.append(Aqueduct())  #5 blue points
+    deck.append(Temple())  #3 blue points
+    deck.append(Statue())  #4 blue points
+    deck.append(Courthouse())  #4 blue points
+    deck.append(Forum())  #Free grey resource
+    deck.append(Caravansery())  #free brown resource
+    deck.append(Vineyard(queue))  #Gold for brown cards <^>
+    deck.append(Walls()) #2 shields
+    deck.append(Stables())  #2 shields
+    deck.append(ArcheryRange())  #2 shields
+    deck.append(Dispensary()) #compass
+    deck.append(Laboratory()) #gear
+    deck.append(Library())  #tablet
+    deck.append(School())  #tablet
     if player_count >= 4:
-        deck.append(Sawmill(64))  #2 wood
-        deck.append(Quarry(65))  #2 stone
-        deck.append(Brickyard(66))  #2 bricks
-        deck.append(Foundry(67))  #2 ore
-        deck.append(Bazar(68,queue))  #2 Gold for grey cards <^>
-        deck.append(TrainingGround(69)) #2 shields
-        deck.append(Dispensary(70))  #compass
+        deck.append(Sawmill())  #2 wood
+        deck.append(Quarry())  #2 stone
+        deck.append(Brickyard())  #2 bricks
+        deck.append(Foundry())  #2 ore
+        deck.append(Bazar(queue))  #2 Gold for grey cards <^>
+        deck.append(TrainingGround()) #2 shields
+        deck.append(Dispensary())  #compass
         if player_count >= 5:
-            deck.append(Loom(71))  # loom
-            deck.append(Glassworks(72))  # glass
-            deck.append(Press(73))  #papyrus
-            deck.append(Courthouse(74))  #4 blue points
-            deck.append(Caravansery(75))  #Free brown resource
-            deck.append(Stables(76)) #2 shields
-            deck.append(Laboratory(77))  #gear
+            deck.append(Loom())  # loom
+            deck.append(Glassworks())  # glass
+            deck.append(Press())  #papyrus
+            deck.append(Courthouse())  #4 blue points
+            deck.append(Caravansery())  #Free brown resource
+            deck.append(Stables()) #2 shields
+            deck.append(Laboratory())  #gear
             if player_count >= 6:
-                deck.append(Temple(78)) # 3 blue points
-                deck.append(Forum(79)) 
-                deck.append(Caravansery(80))  #Free brown resource
-                deck.append(Vineyard(81))  #Gold for brown cards <^>
-                deck.append(TrainingGround(82))  #2 shields
-                deck.append(ArcheryRange(83)) #2 shields
-                deck.append(Library(84)) #tablet
+                deck.append(Temple()) # 3 blue points
+                deck.append(Forum()) 
+                deck.append(Caravansery())  #Free brown resource
+                deck.append(Vineyard())  #Gold for brown cards <^>
+                deck.append(TrainingGround())  #2 shields
+                deck.append(ArcheryRange()) #2 shields
+                deck.append(Library()) #tablet
                  
     return deck
 
 def deck_setup_age_1(player_count):
     deck = []
-    deck.append(LumberYard(1))  #wood
-    deck.append(StonePit(2))  #stone
-    deck.append(ClayPool(3))  #bricks
-    deck.append(OreVein(4))  #ore
-    deck.append(ClayPit(5))  # ore\bricks
-    deck.append(TimberYard(6))  # wood\stone
-    deck.append(Loom(7))  #glass
-    deck.append(Glassworks(8))  #papyrus
-    deck.append(Press(9))  #loom
-    deck.append(Baths(10))  #3 blue points
-    deck.append(Altar(11))  #2 blue points
-    deck.append(Theatre(12))  #2 blue points
-    deck.append(EastTradingPost(13))  #lower east brown trading costs
-    deck.append(WestTradingPost(14)) #lower west brown trading costs
-    deck.append(MarketPlace(15))  #lower both grey trading costs
-    deck.append(Stockade(16))  #lower brown trading costs
-    deck.append(Barracks(17)) 
-    deck.append(GuardTower(18)) 
-    deck.append(Apothecary(19))  #compass
-    deck.append(Workshop(20))  #gear
-    deck.append(Scriptorium(21))  #tablet
+    deck.append(LumberYard())  #wood
+    deck.append(StonePit())  #stone
+    deck.append(ClayPool())  #bricks
+    deck.append(OreVein())  #ore
+    deck.append(ClayPit())  # ore\bricks
+    deck.append(TimberYard())  # wood\stone
+    deck.append(Loom())  #glass
+    deck.append(Glassworks())  #papyrus
+    deck.append(Press())  #loom
+    deck.append(Baths())  #3 blue points
+    deck.append(Altar())  #2 blue points
+    deck.append(Theatre())  #2 blue points
+    deck.append(EastTradingPost())  #lower east brown trading costs
+    deck.append(WestTradingPost()) #lower west brown trading costs
+    deck.append(MarketPlace())  #lower both grey trading costs
+    deck.append(Stockade())  #lower brown trading costs
+    deck.append(Barracks()) 
+    deck.append(GuardTower()) 
+    deck.append(Apothecary())  #compass
+    deck.append(Workshop())  #gear
+    deck.append(Scriptorium())  #tablet
     if player_count >= 4:
-        deck.append(LumberYard(22))  #wood
-        deck.append(OreVein(23))  #ore
-        deck.append(Excavation(24))  # stone\bricks
-        deck.append(Pawnshop(25))  #3 blue points
-        deck.append(Tavern(26))  #5 coins
-        deck.append(GuardTower(27))
-        deck.append(Scriptorium(28))  #tablet
+        deck.append(LumberYard())  #wood
+        deck.append(OreVein())  #ore
+        deck.append(Excavation())  # stone\bricks
+        deck.append(Pawnshop())  #3 blue points
+        deck.append(Tavern())  #5 coins
+        deck.append(GuardTower())
+        deck.append(Scriptorium())  #tablet
         if player_count >= 5:
-            deck.append(StonePit(29))  #stone
-            deck.append(ClayPool(30))  #bricks
-            deck.append(ForestCave(31))  # wood\ore
-            deck.append(Altar(32))  #2 blue points
-            deck.append(Tavern(33))  #5 coins
-            deck.append(Barracks(34))
-            deck.append(Apothecary(35))  #compass
+            deck.append(StonePit())  #stone
+            deck.append(ClayPool())  #bricks
+            deck.append(ForestCave())  # wood\ore
+            deck.append(Altar())  #2 blue points
+            deck.append(Tavern())  #5 coins
+            deck.append(Barracks())
+            deck.append(Apothecary())  #compass
             if player_count >= 6:
-                deck.append(TreeFarm(36)) # wood\bricks
-                deck.append(Mine(37))  # stone\ore
-                deck.append(Loom(38))  #loom
-                deck.append(Glassworks(39))  #glass
-                deck.append(Press(40))  #papyrus
-                deck.append(MarketPlace(41))
-                deck.append(Theatre(42))
+                deck.append(TreeFarm()) # wood\bricks
+                deck.append(Mine())  # stone\ore
+                deck.append(Loom())  #loom
+                deck.append(Glassworks())  #glass
+                deck.append(Press())  #papyrus
+                deck.append(MarketPlace())
+                deck.append(Theatre())
                  
     return deck
 

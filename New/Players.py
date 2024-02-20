@@ -296,12 +296,29 @@ class Player:
 			self.play_card(discard_pile.pop(selection-1))
 			
 
-	def play_card(self,card):
+	def play_card(self,card,cost):
+		if cost != 0:
+			if cost == 1:
+				self.resources[RESOURCE_GOLD] -= 1
+			else:
+				self.resources[RESOURCE_GOLD] -= cost['east']
+				self.east_player.resources[RESOURCE_GOLD] += cost['east']
+				self.resources[RESOURCE_GOLD] -= cost['west']
+				self.west_player.resources[RESOURCE_GOLD] += cost['west']
+
 		self.tableau.append(card)
 		card.effect(self)
 		self.color_count[card.color] += 1
 	
-	def play_wonder(self):
+	def play_wonder(self,cost):
+		if cost != 0:
+			if cost == 1:
+				self.resources[RESOURCE_GOLD] -= 1
+			else:
+				self.resources[RESOURCE_GOLD] -= cost['east']
+				self.east_player.resources[RESOURCE_GOLD] += cost['east']
+				self.resources[RESOURCE_GOLD] -= cost['west']
+				self.west_player.resources[RESOURCE_GOLD] += cost['west']
 		self.wonder.effect(self)
 
 	def show_available_cards(self):
@@ -415,9 +432,10 @@ class Player:
 	def is_free_prechains(self,card):
 		if not hasattr(card,"prechains"):
 			return False
-		for c in card.prechains:
-			if c in self.tableau:
-				return True
+		for pre in card.prechains:
+			for card in self.tableau:
+				if card.name == pre:
+					return True
 		return False
 	
 	#Even for wonders that need 2 grey ressources, you'll never need to buy more than one per type
