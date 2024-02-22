@@ -16,7 +16,7 @@ class Card:
     def __str__(self) -> str:
         return f"{ANSI[self.color]}{self.name}\033[0m"
     def __repr__(self) -> str:
-        return f"{ANSI[self.color]}{self.name}\033[0m"
+        return f"{ANSI[self.color]}{self.name}"
     
     def print_unavailable(self) ->str:
         return print(f"{ANSI['unavailable']}{self.name}\033[0m")
@@ -172,9 +172,9 @@ class WestTradingPost(Card):
     def effect(self,player):
          player.lower_trading_cost("west")
 
-class MarketPlace(Card):
+class Marketplace(Card):
     def __init__(self,id=20):
-          super().__init__(id,"MarketPlace",COLOR_YELLOW,1,None,postchains=["Caravansery"])
+          super().__init__(id,"Marketplace",COLOR_YELLOW,1,None,postchains=["Caravansery"])
     
     def effect(self,player):
          player.lower_trading_cost(COLOR_GREY)

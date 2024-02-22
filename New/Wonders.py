@@ -52,7 +52,7 @@ class Ephesos(Wonder):
 				player.add_resource(RESOURCE_GOLD,4)
 				self.all_done = True
 		self.stages_completed += 1
-		player.choose_card_for_wonder()
+		
 
 class Babylon(Wonder):
 	def __init__(self,player):
@@ -86,7 +86,7 @@ class Babylon(Wonder):
 				player.add_science("any")
 				self.all_done = True
 		self.stages_completed += 1
-		player.choose_card_for_wonder()
+		
 
 class Gizah(Wonder):
 	def __init__(self,player):
@@ -123,7 +123,7 @@ class Gizah(Wonder):
 				player.add_points(POINTS_WONDER,7)
 				self.all_done = True
 		self.stages_completed += 1
-		player.choose_card_for_wonder()
+		
 
 
 class Halikarnassos(Wonder):
@@ -164,7 +164,7 @@ class Halikarnassos(Wonder):
 				self.queue.append((lambda p : p.play_from_discard(self.discard_pile),player))
 				self.all_done = True
 		self.stages_completed += 1
-		player.choose_card_for_wonder()
+		
 
 class Alexandria(Wonder):
 	def __init__(self,player):
@@ -199,13 +199,13 @@ class Alexandria(Wonder):
 				player.add_points(POINTS_WONDER,7)
 				self.all_done = True
 		self.stages_completed += 1
-		player.choose_card_for_wonder()
+		
 
 class Rhodos(Wonder):
 	def __init__(self,player):
 		super().__init__()
 		self.name = "Rhodos"
-		player.add_resource(RESOURCE_PAPYRUS)
+		player.add_resource(RESOURCE_ORE)
 		if self.side == "A":
 			self.cost = [RESOURCE_WOOD,RESOURCE_WOOD]
 		else:
@@ -233,6 +233,6 @@ class Rhodos(Wonder):
 				player.add_shields(1)
 				self.all_done = True
 		self.stages_completed += 1
-		player.choose_card_for_wonder()
+		
 
 	

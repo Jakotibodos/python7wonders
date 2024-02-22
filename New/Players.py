@@ -249,28 +249,34 @@ class Player:
 
 
 			print(f"[{input_option}] play ".ljust(13)+f"{str(card).ljust(26)} {p}")
-			input_option += 1
+			input_option += 1 
 
 			print(f"[{input_option}] discard".ljust(13)+f"{str(card)}")
 			input_option += 1
 
 		for card in self.hand:
-			if card not in available_cards: 
-				print(f"[{input_option}] discard".ljust(13)+f"{str(card)}")
+			if card not in available_cards:
+				print(f"{ANSI['unavailable']}[{input_option}] play ".ljust(18)+f"{card.name}\033[0m") 
+				input_option += 1
+
+				print(f"[{input_option}] discard ".ljust(13)+f"{str(card)}")
 				input_option += 1
 		
 		
-	def print_wonder_option(self,price):
-		if price == 0:
-			p = ""
-		elif price == 1:
-			p = "Bank: $"
+	def print_wonder_option(self,price,wonder_available):
+		if not wonder_available:
+			print(f"{ANSI['unavailable']}[0] play ".ljust(18)+f"{self.wonder.name.ljust(26)}\033[0m")
 		else:
-			p = ("East: "+"$"*price['east'] if price['east'] > 0 else "")\
-			+("     " if price['east']>0 and price['west']>0 else "")\
-			+("West: "+"$"*price['west'] if price['west'] > 0 else "")
-		
-		print(f"[0] play ".ljust(13)+f"{str(self.wonder).ljust(26)} {p}")
+			if price == 0:
+				p = ""
+			elif price == 1:
+				p = "Bank: $"
+			else:
+				p = ("East: "+"$"*price['east'] if price['east'] > 0 else "")\
+				+("     " if price['east']>0 and price['west']>0 else "")\
+				+("West: "+"$"*price['west'] if price['west'] > 0 else "")
+			
+			print(f"[0] play ".ljust(13)+f"{str(self.wonder).ljust(26)} {p}")
 	
 		
 	def choose_card_for_wonder(self):
@@ -287,38 +293,29 @@ class Player:
 			print(f"{self.name}, there are no cards in the discard pile\n")
 			return
 		else:
-			print(f"{self.name}, You can play a card from the discard pile for free")
+			print(f"{self.name}, You can play a card from the discard pile for free:")
 			input_option = 1
 			for card in discard_pile:
 				print(f"[{input_option}] {str(card)}")
 				input_option += 1
 			selection = int(input("Choose a card: ")) 
-			self.play_card(discard_pile.pop(selection-1))
+			self.play_card(discard_pile.pop(selection-1),0) #free card
 			
 
 	def play_card(self,card,cost):
-		if cost != 0:
-			if cost == 1:
-				self.resources[RESOURCE_GOLD] -= 1
-			else:
-				self.resources[RESOURCE_GOLD] -= cost['east']
-				self.east_player.resources[RESOURCE_GOLD] += cost['east']
-				self.resources[RESOURCE_GOLD] -= cost['west']
-				self.west_player.resources[RESOURCE_GOLD] += cost['west']
+		if cost != 0 and cost != 1: #Pay the players you bought shit from
+			self.east_player.resources[RESOURCE_GOLD] += cost['east']
+			self.west_player.resources[RESOURCE_GOLD] += cost['west']
 
 		self.tableau.append(card)
 		card.effect(self)
 		self.color_count[card.color] += 1
 	
 	def play_wonder(self,cost):
-		if cost != 0:
-			if cost == 1:
-				self.resources[RESOURCE_GOLD] -= 1
-			else:
-				self.resources[RESOURCE_GOLD] -= cost['east']
-				self.east_player.resources[RESOURCE_GOLD] += cost['east']
-				self.resources[RESOURCE_GOLD] -= cost['west']
-				self.west_player.resources[RESOURCE_GOLD] += cost['west']
+		if cost != 0: #Pay the players you bought shit from
+			self.east_player.resources[RESOURCE_GOLD] += cost['east']
+			self.west_player.resources[RESOURCE_GOLD] += cost['west']
+
 		self.wonder.effect(self)
 
 	def show_available_cards(self):
@@ -360,6 +357,7 @@ class Player:
 		
     	# Create a copy of the player's resources dictionary
 		available_resources = self.resources.copy()
+		free_grey = self.free_conditional_resources[COLOR_GREY]
 
 		#Seperate into brown and grey (easier for conditional resources)
 		new_cost_brown = []
@@ -367,7 +365,7 @@ class Player:
 		#Go through set resources
 		for resource in cost:
 			if available_resources[resource] > 0:
-				available_resources[resource] -= 1 
+				available_resources[resource] -= 1
 			else:
 				new_cost_brown.append(resource) if resource in BROWN_RESOURCES else new_cost_grey.append(resource)
 		
@@ -378,10 +376,10 @@ class Player:
 
 		possible_prices = []
 		#Buying from other people and/or using conditional resources
-		if len(new_cost_brown) == 0: #Only grey resources left and have to buy some
+		if len(new_cost_brown)-self.free_conditional_resources[COLOR_BROWN] <= 0: #Only grey resources left and have to buy some
 			return self.buy_grey_from_neighbors(new_cost_grey)
 		
-		elif len(new_cost_grey) == 0: #Only brown resources left 
+		elif len(new_cost_grey)-self.free_conditional_resources[COLOR_GREY] <= 0: #Only brown resources left 
 			for combo in list(product(*self.conditional_resources)):
 				combo = list(combo) 
 				new_new_cost_brown = []
@@ -404,6 +402,9 @@ class Player:
 			grey_price = self.buy_grey_from_neighbors(new_cost_grey)
 			if grey_price == -1: #if you can't buy grey resources from neighbors, then you can't buy the card
 				return -1
+			
+
+
 			#Generates all combinations of conditional resources
 			for combo in list(product(*self.conditional_resources)): 
 				combo = list(combo)
@@ -420,13 +421,14 @@ class Player:
 					return grey_price
 				else:
 					brown_price = self.buy_brown_from_neighbors(new_new_cost_brown) 
-					if brown_price == {'east':self.east_trade_prices,'west':0} or brown_price == {'east':0,'west':self.west_trade_prices}: #it doesn't get better than this
-						#print("brown: ",brown_price,"grey: ",grey_price)
-						return {'east':brown_price["east"]+grey_price["east"],'west':brown_price["west"]+grey_price["west"]} #Combine grey and brown prices
-					elif brown_price != -1:
+					if brown_price != -1:
 						possible_prices.append({'east':brown_price["east"]+grey_price["east"],'west':brown_price["west"]+grey_price["west"]}) #Combine grey and brown prices
 		
-		return find_min_price(possible_prices)
+		min_price = find_min_price(possible_prices)
+		if min_price == -1 or min_price['east']+min_price['west'] > self.resources[RESOURCE_GOLD]:
+			return -1
+		else:
+			return min_price 
 	
 
 	def is_free_prechains(self,card):

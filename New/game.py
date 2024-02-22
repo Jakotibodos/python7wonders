@@ -5,19 +5,21 @@ from Wonders import Wonder
 from Cards import *
 from Wonders import *
 
-discard_pile = []
-queue = []
+
 
 def main():
+    discard_pile = []
+    queue = []
+
     nbplayers = int(input("Enter number of players: "))
     while (nbplayers < 3 or nbplayers > 6):
         print("Player count must be between 3 and 6")
         nbplayers = int(input("\nEnter number of player: "))
 
-    players = players_setup(nbplayers) #Includes wonder setup
+    players = players_setup(queue,discard_pile,nbplayers) #Includes wonder setup
 
     for age in range(1,4): #each age
-        assign_cards(players,age) #Create decks and assign them to players
+        assign_cards(players,queue,age) #Create decks and assign them to players
 
         for turn in range(6):
             print("\n================================")
@@ -31,25 +33,27 @@ def main():
                 print(player.conditional_resources)
                 print("Free Brown: "+str(player.free_conditional_resources[COLOR_BROWN])+" Free Grey: "+str(player.free_conditional_resources[COLOR_GREY]))
                 print(player.resources)
-                play_turn(player,temp_queue)  
+                play_turn(player,temp_queue,discard_pile)  
                 
-            if turn == 5: #last turn
-                if player.has_double_last_cards:
-                    print()
-                    play_turn(player)
-                else:
-                    discard_last_card(player)
+                if turn == 5: #last turn
+                    if player.has_double_last_cards:
+                        print()
+                        play_turn(player,temp_queue,discard_pile)
+                    else:
+                        discard_last_card(player,discard_pile)
 
             for card,player,cost in temp_queue: #normal card play queue
                 if card == "wonder":
                     player.play_wonder(cost)
                 else:
                     player.play_card(card,cost)
-                   
+            temp_queue.clear()
+
+            
             for effect,player in queue: #For cards that give coins depending on card counts (and Halikarnassos discard play)
                 effect(player)
             queue.clear()
-            
+ 
             switch_hands(players,age)
 
         print("war time")
@@ -83,15 +87,14 @@ def switch_hands(playerlist,age):
         player.hand = temp_hand 
 
 
-def play_turn(player,temp_queue):
+def play_turn(player,temp_queue, discard_pile):
     available_cards, cost, unavailable_cards = player.show_available_cards()
     
     wonder_available = False
     wonder_price = player.get_price(player.wonder)
     if not player.wonder.all_done and wonder_price != -1:
         wonder_available = True
-        player.print_wonder_option(wonder_price)
-   
+    player.print_wonder_option(wonder_price, wonder_available)
 
     player.print_available_cards(available_cards,cost)
     
@@ -101,7 +104,9 @@ def play_turn(player,temp_queue):
     while(not card_selected):
         try:
             input_option = int(input(f"{player.name}'s turn: "))
-            if input_option < 1-wonder_available or input_option > len(available_cards)*2+(len(player.hand)-len(available_cards)):
+            if input_option < 1-wonder_available \
+                or input_option > len(player.hand)*2 \
+                or (input_option > len(available_cards)*2 and input_option%2 == 1):
                 print("Invalid option")
             else:
                 card_selected = True
@@ -109,20 +114,31 @@ def play_turn(player,temp_queue):
             print("Invalid option")
     
     if input_option == 0:
+        player.choose_card_for_wonder()
         temp_queue.append(("wonder",player,wonder_price))
         return
-    elif input_option<=len(available_cards)*2:
-        if input_option % 2 == 1: #play card
+    else:
+        if input_option % 2 == 1: #Add card to play queue
             card = available_cards[input_option//2]
-            temp_queue.append((card,player,cost[input_option//2]))
+            price = cost[input_option//2]
+            temp_queue.append((card,player,price))
+            print("played: "+str(card))
+            if price !=0:
+                if price == 1:
+                    player.resources[RESOURCE_GOLD] -= 1
+                else: #Pay other players
+                    player.resources[RESOURCE_GOLD] -= price['east']
+                    player.resources[RESOURCE_GOLD] -= price['west']
+
         else: #discard card (that could be played)
-            card = available_cards[input_option//2 - 1]
+            if input_option <= len(available_cards)*2:
+                card = available_cards[input_option//2 - 1]
+            else:
+                print((input_option-len(available_cards))//2 - 1)
+                card = unavailable_cards[(input_option//2-len(available_cards)) - 1]
             player.resources[RESOURCE_GOLD] += 3
             discard_pile.append(card)
-    else:	#discard cards (that cannot be played)
-        card = unavailable_cards[input_option-len(available_cards)*2-1]
-        player.resources[RESOURCE_GOLD] += 3
-        discard_pile.append(card)
+            print("discarded: "+str(card))
     
     if not isinstance(card, Wonder):
         player.hand.remove(card)
@@ -130,16 +146,18 @@ def play_turn(player,temp_queue):
     
 
 
-def discard_last_card(player):
+def discard_last_card(player,discard_pile):
+    print(discard_pile)
     discard_pile.append(player.hand.pop())
+    print(discard_pile)
 
 
-def players_setup(player_count = 3): #max 6
+def players_setup(queue,discard_pile,player_count = 3): #max 6
     wonders_list = ["Alexandria","Babylon","Ephesos","Gizah","Halikarnassos","Rhodos"]
     playerlist = []
     for i in range(player_count):
         player = Player(input(f"Name of player {i}: ")) 
-        set_wonder(player,wonders_list)
+        set_wonder(player,wonders_list,queue,discard_pile)
         playerlist.append(player)
     
     for i in range(player_count):
@@ -149,11 +167,11 @@ def players_setup(player_count = 3): #max 6
     
     return playerlist
 
-def assign_cards(players_list, age=1):
+def assign_cards(players_list, queue, age=1):
     if age == 1:
         deck = deck_setup_age_1(len(players_list))
     elif age == 2:
-        deck = deck_setup_age_2(len(players_list))
+        deck = deck_setup_age_2(len(players_list),queue)
     else:
         deck = deck_setup_age_3(len(players_list))
 
@@ -166,7 +184,7 @@ def assign_cards(players_list, age=1):
         print(f"{player.name}'s hand: {player.hand}")
         i += 1
 
-def set_wonder(player,wonders_list):
+def set_wonder(player,wonders_list,queue,discard_pile):
     wonder_name = wonders_list.pop(randint(0,len(wonders_list)-1))
     if wonder_name == "Alexandria":
         wonder = Alexandria(player)
@@ -240,7 +258,7 @@ def deck_setup_age_3(player_count):
                 deck.append(purple_cards[7])
                  
     return deck
-def deck_setup_age_2(player_count):
+def deck_setup_age_2(player_count,queue):
     deck = []
     deck.append(Sawmill())  #2 wood
     deck.append(Quarry())  #2 stone
@@ -306,7 +324,7 @@ def deck_setup_age_1(player_count):
     deck.append(Theatre())  #2 blue points
     deck.append(EastTradingPost())  #lower east brown trading costs
     deck.append(WestTradingPost()) #lower west brown trading costs
-    deck.append(MarketPlace())  #lower both grey trading costs
+    deck.append(Marketplace())  #lower both grey trading costs
     deck.append(Stockade())  #lower brown trading costs
     deck.append(Barracks()) 
     deck.append(GuardTower()) 
@@ -335,7 +353,7 @@ def deck_setup_age_1(player_count):
                 deck.append(Loom())  #loom
                 deck.append(Glassworks())  #glass
                 deck.append(Press())  #papyrus
-                deck.append(MarketPlace())
+                deck.append(Marketplace())
                 deck.append(Theatre())
                  
     return deck
