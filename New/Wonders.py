@@ -19,6 +19,7 @@ class Wonder:
 	def get_cost(self):
 		return self.cost
 	
+	
 
 class Ephesos(Wonder):
 	def __init__(self,player):

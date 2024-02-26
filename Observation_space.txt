@@ -1,0 +1,19 @@
+[
+0 is_wonder_available
+1-75 cards in hand
+76-82 can be built
+83-89 card in which position (id+1/75)
+89-163 cards_built
+164 current_age/3
+165 money/20 
+166 wonder_id/6
+167 nb wonders stages built/4
+168 my_shields/25
+169 east_shields/25
+170 west_shields/25
+171 can_build_last_double
+172-246 east_cards_built
+247-321 west_cards_built
+]
+
+if choose wonder, all 0 except card in hand

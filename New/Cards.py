@@ -178,7 +178,7 @@ class Marketplace(Card):
     
     def effect(self,player):
          player.lower_trading_cost(COLOR_GREY)
-
+#21
 #Red cards
         
 class Stockade(Card):
@@ -205,21 +205,21 @@ class GuardTower(Card):
 #Green Cards 
          
 class Apothecary(Card):
-    def __init__(self,id=25):
+    def __init__(self,id=24):
         super().__init__(id,"Apothecary",COLOR_GREEN,1,[RESOURCE_LOOM],postchains=["Stables","Dispensary"])
     
     def effect(self,player):
         player.add_science(SCIENCE_COMPASS)
 
 class Workshop(Card):
-    def __init__(self,id=26):
+    def __init__(self,id=25):
         super().__init__(id,"Workshop",COLOR_GREEN,1,[RESOURCE_GLASS],postchains=["Laboratory","Archery Range"])
 
     def effect(self,player):
         player.add_science(SCIENCE_GEAR)
 
 class Scriptorium(Card):
-    def __init__(self,id=27):
+    def __init__(self,id=26):
         super().__init__(id,"Scriptorium",COLOR_GREEN,1,[RESOURCE_PAPYRUS],postchains=["Courthouse","Library"])
     
     def effect(self,player):
@@ -229,26 +229,26 @@ class Scriptorium(Card):
         
 #BROWN CARDS
 class Sawmill(Card):
-    def __init__(self,id=28):
+    def __init__(self,id=27):
         super().__init__(id,"Sawmill",COLOR_BROWN,2,[RESOURCE_GOLD])
     def effect(self,player):
         player.add_resource(RESOURCE_WOOD,2)
 
 class Quarry(Card):
-    def __init__(self,id=29):
+    def __init__(self,id=28):
         super().__init__(id,"Quarry",COLOR_BROWN,2,[RESOURCE_GOLD])
     def effect(self,player):
         player.add_resource(RESOURCE_STONE,2)
 
 class Brickyard(Card):
-    def __init__(self,id=30):
+    def __init__(self,id=29):
         super().__init__(id,"Brickyard",COLOR_BROWN,2,[RESOURCE_GOLD])
     
     def effect(self,player):
         player.add_resource(RESOURCE_BRICK,2)
 
 class Foundry(Card):
-    def __init__(self,id=31):
+    def __init__(self,id=30):
         super().__init__(id,"Foundry",COLOR_BROWN,2,[RESOURCE_GOLD])
 
     def effect(self,player):
@@ -257,28 +257,28 @@ class Foundry(Card):
 #Blue cards
         
 class Aqueduct(Card):
-    def __init__(self,id=32):
+    def __init__(self,id=31):
         super().__init__(id,"Aqueduct",COLOR_BLUE,2,[RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE],["Baths"])
     
     def effect(self,player):
         player.add_points(POINTS_BLUE,5)
 
 class Temple(Card):
-    def __init__(self,id=33):
+    def __init__(self,id=32):
         super().__init__(id,"Temple",COLOR_BLUE,2,[RESOURCE_WOOD,RESOURCE_BRICK,RESOURCE_GLASS],["Altar"],["Pantheon"])
 
     def effect(self,player):
         player.add_points(POINTS_BLUE,3)
 
 class Statue(Card):
-    def __init__(self,id=34):
+    def __init__(self,id=33):
         super().__init__(id,"Statue",COLOR_BLUE,2,[RESOURCE_WOOD,RESOURCE_ORE,RESOURCE_ORE],["Theatre"],["Gardens"])
     
     def effect(self,player):
         player.add_points(POINTS_BLUE,4)
 
 class Courthouse(Card):
-    def __init__(self,id=35):
+    def __init__(self,id=34):
         super().__init__(id,"Courthouse",COLOR_BLUE,2,[RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_LOOM],["Scriptorium"])
 
     def effect(self,player):
@@ -287,28 +287,28 @@ class Courthouse(Card):
 # YELLOW CARDS
 
 class Forum(Card):
-    def __init__(self,id=36):
+    def __init__(self,id=35):
         super().__init__(id,"Forum",COLOR_YELLOW,2,[RESOURCE_BRICK,RESOURCE_BRICK],["East Trading Post","West Trading Post"],["Haven"])
 
     def effect(self,player):
         player.add_free_conditional_resource(COLOR_GREY)    
 
 class Caravansery(Card):
-    def __init__(self,id=37):
+    def __init__(self,id=36):
         super().__init__(id,"Caravansery",COLOR_YELLOW,2,[RESOURCE_WOOD,RESOURCE_WOOD],["Marketplace"],["Lighthouse"])
 
     def effect(self,player):
         player.add_free_conditional_resource(COLOR_BROWN)
 
 class Vineyard(Card):
-    def __init__(self,queue,id=38):
+    def __init__(self,queue,id=37):
         super().__init__(id,"Vineyard",COLOR_YELLOW,2,None)
         self.queue = queue
     def effect(self,player):
         self.queue.insert(0,(lambda p : p.add_coins_per_card(1,COLOR_BROWN,True,True,True),player))
 
 class Bazar(Card):
-    def __init__(self,queue,id=39):
+    def __init__(self,queue,id=38):
         super().__init__(id,"Bazar",COLOR_YELLOW,2,None)
         self.queue = queue
     def effect(self,player):
@@ -317,28 +317,28 @@ class Bazar(Card):
 #Red Cards
 
 class Walls(Card):
-    def __init__(self,id=40):
+    def __init__(self,id=39):
         super().__init__(id,"Walls",COLOR_RED,2,[RESOURCE_STONE,RESOURCE_STONE,RESOURCE_STONE],postchains=["Fortifications"])
 
     def effect(self,player):
         player.add_shields(2)    
 
 class TrainingGround(Card):
-    def __init__(self,id=41):
+    def __init__(self,id=40):
         super().__init__(id,"Training Ground",COLOR_RED,2,[RESOURCE_WOOD,RESOURCE_ORE,RESOURCE_ORE],postchains=["Circus"])
     
     def effect(self,player):
         player.add_shields(2)
 
 class Stables(Card):
-    def __init__(self,id=42):
+    def __init__(self,id=41):
         super().__init__(id,"Stables",COLOR_RED,2,[RESOURCE_WOOD,RESOURCE_BRICK,RESOURCE_ORE],["Apothecary"])
     
     def effect(self,player):
         player.add_shields(2)
 
 class ArcheryRange(Card):
-    def __init__(self,id=43):
+    def __init__(self,id=42):
         super().__init__(id,"Archery Range",COLOR_RED,2,[RESOURCE_WOOD,RESOURCE_ORE],["Workshop"])
     
     def effect(self,player):
@@ -348,28 +348,28 @@ class ArcheryRange(Card):
 # Green Cards
         
 class Dispensary(Card):
-    def __init__(self,id=44):
+    def __init__(self,id=43):
         super().__init__(id,"Dispensary",COLOR_GREEN,2,[RESOURCE_ORE,RESOURCE_ORE,RESOURCE_GLASS],["Apothecary"],["Lodge","Arena"])
     
     def effect(self,player):
         player.add_science(SCIENCE_COMPASS)
 
 class Laboratory(Card):
-    def __init__(self,id=45):
+    def __init__(self,id=44):
         super().__init__(id,"Laboratory",COLOR_GREEN,2,[RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_PAPYRUS],["Workshop"],["Observatory","Siege Workshop"])
     
     def effect(self,player):
         player.add_science(SCIENCE_GEAR)
 
 class Library(Card):
-    def __init__(self,id=46):
+    def __init__(self,id=45):
         super().__init__(id,"Library",COLOR_GREEN,2,[RESOURCE_STONE,RESOURCE_STONE,RESOURCE_LOOM],["Scriptorium"],["Senate","University"])
 
     def effect(self,player):
         player.add_science(SCIENCE_TABLET)
 
 class School(Card) :
-    def __init__(self,id=47):
+    def __init__(self,id=46):
         super().__init__(id,"School",COLOR_GREEN,2,[RESOURCE_WOOD,RESOURCE_PAPYRUS],postchains=["Academy","Study"])
     
     def effect(self,player):
@@ -380,35 +380,35 @@ class School(Card) :
 # Blue cards
         
 class Pantheon(Card):
-    def __init__(self,id=48):
+    def __init__(self,id=47):
         super().__init__(id,"Pantheon",COLOR_BLUE,3,[RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_ORE,RESOURCE_GLASS,RESOURCE_PAPYRUS,RESOURCE_LOOM],["Temple"])
     
     def effect(self,player):
         player.add_points(POINTS_BLUE,7)
 
 class Gardens(Card):
-    def __init__(self,id=49):
+    def __init__(self,id=48):
         super().__init__(id,"Gardens",COLOR_BLUE,3,[RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_WOOD],["Statue"])
 
     def effect(self,player):
         player.add_points(POINTS_BLUE,5)
 
 class TownHall(Card):
-    def __init__(self,id=50):
+    def __init__(self,id=49):
         super().__init__(id,"Town Hall",COLOR_BLUE,3,[RESOURCE_STONE,RESOURCE_STONE,RESOURCE_ORE,RESOURCE_GLASS])
 
     def effect(self,player):
         player.add_points(POINTS_BLUE,6)
 
 class Palace(Card):
-    def __init__(self,id=51):
+    def __init__(self,id=50):
         super().__init__(id,"Palace",COLOR_BLUE,3,[RESOURCE_STONE,RESOURCE_ORE,RESOURCE_WOOD,RESOURCE_BRICK,RESOURCE_GLASS,RESOURCE_PAPYRUS,RESOURCE_LOOM])
 
     def effect(self,player):
         player.add_points(POINTS_BLUE,8)
 
 class Senate(Card):
-    def __init__(self,id=52):
+    def __init__(self,id=51):
         super().__init__(id,"Senate",COLOR_BLUE,3,[RESOURCE_WOOD,RESOURCE_WOOD,RESOURCE_STONE,RESOURCE_ORE],["Library"])
     
     def effect(self,player):
@@ -417,7 +417,7 @@ class Senate(Card):
 #Yellow Cards
 
 class Haven(Card):
-    def __init__(self,id=53):
+    def __init__(self,id=52):
         super().__init__(id,"Haven",COLOR_YELLOW,3,[RESOURCE_WOOD,RESOURCE_ORE,RESOURCE_LOOM],["Forum"])
     
     def effect(self,player):
@@ -425,7 +425,7 @@ class Haven(Card):
         player.add_coins_per_card(1,COLOR_BROWN)
 
 class Lighthouse(Card):
-    def __init__(self,id=54):
+    def __init__(self,id=53):
         super().__init__(id,"Lighthouse",COLOR_YELLOW,3,[RESOURCE_STONE,RESOURCE_GLASS],["Caravansery"])
 
     def effect(self,player):

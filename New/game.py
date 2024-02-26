@@ -1,25 +1,34 @@
 from Players import Player
 from common import *
 from random import randint, choice, shuffle
-from Wonders import Wonder
-from Cards import *
 from Wonders import *
+from Cards import *
+import gym
+from gym import spaces
+import numpy as np
+
+
+
 
 
 
 def main():
+    play()
+
+def play():
     discard_pile = []
-    queue = []
+    vineyard_bazar_queue = []
+    Halikarnassos_queue = []
 
     nbplayers = int(input("Enter number of players: "))
     while (nbplayers < 3 or nbplayers > 6):
         print("Player count must be between 3 and 6")
         nbplayers = int(input("\nEnter number of player: "))
 
-    players = players_setup(queue,discard_pile,nbplayers) #Includes wonder setup
+    players = players_setup(Halikarnassos_queue,discard_pile,nbplayers) #Includes wonder setup
 
     for age in range(1,4): #each age
-        assign_cards(players,queue,age) #Create decks and assign them to players
+        assign_cards(players,vineyard_bazar_queue,age) #Create decks and assign them to players
 
         for turn in range(6):
             print("\n================================")
@@ -50,10 +59,18 @@ def main():
             temp_queue.clear()
 
             
-            for effect,player in queue: #For cards that give coins depending on card counts (and Halikarnassos discard play)
+            for effect,player in vineyard_bazar_queue: #For cards that give coins depending on card counts 
                 effect(player)
-            queue.clear()
- 
+            vineyard_bazar_queue.clear()
+
+            for effect,player in Halikarnassos_queue: #For using Halikarnassos play_from discard effect
+                effect(player)
+            Halikarnassos_queue.clear()
+    
+            for effect,player in vineyard_bazar_queue: #In the rare instance halikarnassos plays a vineyard or bazar
+                effect(player)
+            vineyard_bazar_queue.clear()
+
             switch_hands(players,age)
 
         print("war time")
@@ -88,15 +105,22 @@ def switch_hands(playerlist,age):
 
 
 def play_turn(player,temp_queue, discard_pile):
-    available_cards, cost, unavailable_cards = player.show_available_cards()
+    cost = player.get_hand_cost()
+
+    inputs_accepted = set()
+    for i in range(len(player.hand)):
+        if cost[i]!=-1:
+            inputs_accepted.add((i)*2+1) #1,3,5,7,9,11,13 (play options)
+        inputs_accepted.add((i+1)*2) #2,4,6,8,10,12,14 (discard options)
     
     wonder_available = False
     wonder_price = player.get_price(player.wonder)
     if not player.wonder.all_done and wonder_price != -1:
+        inputs_accepted.add(0)
         wonder_available = True
     player.print_wonder_option(wonder_price, wonder_available)
 
-    player.print_available_cards(available_cards,cost)
+    player.print_available_cards(cost)
     
     #TODO Gym action space
 
@@ -104,9 +128,7 @@ def play_turn(player,temp_queue, discard_pile):
     while(not card_selected):
         try:
             input_option = int(input(f"{player.name}'s turn: "))
-            if input_option < 1-wonder_available \
-                or input_option > len(player.hand)*2 \
-                or (input_option > len(available_cards)*2 and input_option%2 == 1):
+            if input_option not in inputs_accepted:
                 print("Invalid option")
             else:
                 card_selected = True
@@ -119,7 +141,7 @@ def play_turn(player,temp_queue, discard_pile):
         return
     else:
         if input_option % 2 == 1: #Add card to play queue
-            card = available_cards[input_option//2]
+            card = player.hand[input_option//2]
             price = cost[input_option//2]
             temp_queue.append((card,player,price))
             print("played: "+str(card))
@@ -131,11 +153,7 @@ def play_turn(player,temp_queue, discard_pile):
                     player.resources[RESOURCE_GOLD] -= price['west']
 
         else: #discard card (that could be played)
-            if input_option <= len(available_cards)*2:
-                card = available_cards[input_option//2 - 1]
-            else:
-                print((input_option-len(available_cards))//2 - 1)
-                card = unavailable_cards[(input_option//2-len(available_cards)) - 1]
+            card = player.hand[input_option//2 - 1]
             player.resources[RESOURCE_GOLD] += 3
             discard_pile.append(card)
             print("discarded: "+str(card))
@@ -152,12 +170,12 @@ def discard_last_card(player,discard_pile):
     print(discard_pile)
 
 
-def players_setup(queue,discard_pile,player_count = 3): #max 6
+def players_setup(halikarnassos_queue,discard_pile,player_count = 3): #max 6
     wonders_list = ["Alexandria","Babylon","Ephesos","Gizah","Halikarnassos","Rhodos"]
     playerlist = []
     for i in range(player_count):
         player = Player(input(f"Name of player {i}: ")) 
-        set_wonder(player,wonders_list,queue,discard_pile)
+        set_wonder(player,wonders_list,halikarnassos_queue,discard_pile)
         playerlist.append(player)
     
     for i in range(player_count):
@@ -167,11 +185,11 @@ def players_setup(queue,discard_pile,player_count = 3): #max 6
     
     return playerlist
 
-def assign_cards(players_list, queue, age=1):
+def assign_cards(players_list, vineyard_bazar_queue, age=1):
     if age == 1:
         deck = deck_setup_age_1(len(players_list))
     elif age == 2:
-        deck = deck_setup_age_2(len(players_list),queue)
+        deck = deck_setup_age_2(len(players_list),vineyard_bazar_queue)
     else:
         deck = deck_setup_age_3(len(players_list))
 
@@ -180,7 +198,7 @@ def assign_cards(players_list, queue, age=1):
     separated_deck = [deck[i:i+7] for i in range(0, len(deck), 7)]
     i = 0
     for player in players_list:
-        player.hand = separated_deck[i]
+        player.hand = sorted(separated_deck[i], key=lambda x: x.id)
         print(f"{player.name}'s hand: {player.hand}")
         i += 1
 

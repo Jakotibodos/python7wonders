@@ -235,9 +235,20 @@ class Player:
 			self.points[POINTS_RED] += points_given
 		else:
 			print(f"{self.name} ties against {self.east_player.name}")
-	def print_available_cards(self,available_cards, cost):
+	def print_available_cards(self, hand_cost):
 		input_option = 1
-		for card,price in zip(available_cards,cost):
+		hand = self.hand.copy()
+		for i in range(len(hand)):
+			price = hand_cost[i]
+			card = hand[i]
+			if price == -1:
+				print(f"{ANSI['unavailable']}[{input_option}] play ".ljust(18)+f"{card.name}\033[0m") 
+				input_option += 1
+
+				print(f"[{input_option}] discard ".ljust(13)+f"{str(card)}")
+				input_option += 1
+				continue
+
 			if price == 0:
 				p = ""
 			elif price == 1:
@@ -247,22 +258,13 @@ class Player:
 				+("     " if price['east']>0 and price['west']>0 else "")\
 				+("West: "+"$"*price['west'] if price['west'] > 0 else "")
 
-
+			
 			print(f"[{input_option}] play ".ljust(13)+f"{str(card).ljust(26)} {p}")
 			input_option += 1 
 
 			print(f"[{input_option}] discard".ljust(13)+f"{str(card)}")
 			input_option += 1
-
-		for card in self.hand:
-			if card not in available_cards:
-				print(f"{ANSI['unavailable']}[{input_option}] play ".ljust(18)+f"{card.name}\033[0m") 
-				input_option += 1
-
-				print(f"[{input_option}] discard ".ljust(13)+f"{str(card)}")
-				input_option += 1
-		
-		
+					
 	def print_wonder_option(self,price,wonder_available):
 		if not wonder_available:
 			print(f"{ANSI['unavailable']}[0] play ".ljust(18)+f"{self.wonder.name.ljust(26)}\033[0m")
@@ -301,7 +303,6 @@ class Player:
 			selection = int(input("Choose a card: ")) 
 			self.play_card(discard_pile.pop(selection-1),0) #free card
 			
-
 	def play_card(self,card,cost):
 		if cost != 0 and cost != 1: #Pay the players you bought shit from
 			self.east_player.resources[RESOURCE_GOLD] += cost['east']
@@ -317,20 +318,12 @@ class Player:
 			self.west_player.resources[RESOURCE_GOLD] += cost['west']
 
 		self.wonder.effect(self)
-
-	def show_available_cards(self):
-		available_cards, cost, unavailable_cards= [], [], []
-
-		for card in self.hand:
-			card_price = self.get_price(card)
-			if card_price == -1:
-				unavailable_cards.append(card)
-			else:
-				available_cards.append(card)
-				cost.append(card_price)
-			
-		return available_cards, cost, unavailable_cards
 	
+	def get_hand_cost(self):
+		cost = []
+		for card in self.hand:
+			cost.append(self.get_price(card))
+		return cost
 
 #returns the cost in gold of buying this card
 	#if 0, the card is free

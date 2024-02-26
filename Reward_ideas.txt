@@ -4,5 +4,5 @@ Green: points that card would give
 Blue: points on card
 Purple: points on card + (turns_left * (cards_of_color_left/players)*2??)
 Grey: ???
-Brown: ???
+Brown: ???	
 Wonder: per wonder reward/points given
