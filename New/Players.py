@@ -17,7 +17,8 @@ from random import choice
 
 
 class Player:
-	def __init__(self, name):
+	def __init__(self, name, id):
+		self.id = id
 		self.name = name
 		self.under_wonder = [] #for cards put under wonders
 		self.tableau = [] # all the players played cards
@@ -132,21 +133,21 @@ class Player:
 					scores.append(_score_science(science))
 			self.add_points(POINTS_GREEN,max(scores))
 
-
-
 	 
 	#For coins only, points are at the end
 	#Bazar and Vineyard (that use this) should be put at the end of queue when played	
-	def add_coins_per_card(self,amount,card_color,me=True,east=False,west=False):
+	def add_coins_per_card(self,amount,card_color,me=True,east=False,west=False,bonus=0):
 		if card_color == "wonder":
 			self.resources[RESOURCE_GOLD] += amount * self.wonder.stages_completed
 			return
 		if me:
-			self.resources[RESOURCE_GOLD] += amount * self.get_color_count(card_color) 
+			self.resources[RESOURCE_GOLD] += amount * self.get_color_count(card_color)
 		if east:
 			self.resources[RESOURCE_GOLD] += amount * self.east_player.get_color_count(card_color)
 		if west:
-			self.resources[RESOURCE_GOLD] += amount * self.west_player.get_color_count(card_color)  
+			self.resources[RESOURCE_GOLD] += amount * self.west_player.get_color_count(card_color)
+
+		self.resources[RESOURCE_GOLD] += bonus * amount  
 	
 	#point_card_color = card from which points are awarded
 	#played_card_color = color/category of card build
@@ -236,34 +237,35 @@ class Player:
 		else:
 			print(f"{self.name} ties against {self.east_player.name}")
 	def print_available_cards(self, hand_cost):
-		input_option = 1
 		hand = self.hand.copy()
 		for i in range(len(hand)):
 			price = hand_cost[i]
 			card = hand[i]
 			if price == -1:
-				print(f"{ANSI['unavailable']}[{input_option}] play ".ljust(18)+f"{card.name}\033[0m") 
-				input_option += 1
+				print(f"{ANSI['unavailable']}[{card.id+1}] play ".ljust(18)+f"{card.name}\033[0m") 
+				
 
-				print(f"[{input_option}] discard ".ljust(13)+f"{str(card)}")
-				input_option += 1
+				print(f"[{card.id+76}] discard ".ljust(13)+f"{str(card)}")
+				
 				continue
+				
 
-			if price == 0:
+			elif price == 0:
 				p = ""
 			elif price == 1:
 				p = "Bank: $"
 			else:
+				
 				p = ("East: "+"$"*price['east'] if price['east'] > 0 else "")\
 				+("     " if price['east']>0 and price['west']>0 else "")\
 				+("West: "+"$"*price['west'] if price['west'] > 0 else "")
 
 			
-			print(f"[{input_option}] play ".ljust(13)+f"{str(card).ljust(26)} {p}")
-			input_option += 1 
+			print(f"[{card.id+1}] play ".ljust(13)+f"{str(card).ljust(26)} {p}")
+			
 
-			print(f"[{input_option}] discard".ljust(13)+f"{str(card)}")
-			input_option += 1
+			print(f"[{card.id+76}] discard".ljust(13)+f"{str(card)}")
+			
 					
 	def print_wonder_option(self,price,wonder_available):
 		if not wonder_available:
@@ -281,36 +283,38 @@ class Player:
 			print(f"[0] play ".ljust(13)+f"{str(self.wonder).ljust(26)} {p}")
 	
 		
-	def choose_card_for_wonder(self):
-		input_option = 1
-		print("You've selected your wonder, please choose a card to play under your wonder: ")
-		for card in self.hand:
-			print(f"[{input_option}] {str(card)}")
-			input_option += 1
+	def choose_card_for_wonder(self,input_option):
+		#print("You've selected your wonder, please choose a card to play under your wonder: ")
+		#for card in self.hand:
+			#print(f"[{input_option}] {str(card)}")
+			#input_option += 1
 
-		self.under_wonder.append(self.hand.pop(int(input())-1))
+		self.under_wonder.append(self.hand.pop(input_option//2 - 1))
 
-	def play_from_discard(self,discard_pile):
+	def play_from_discard(self,input,discard_pile):
 		if not discard_pile: #empty discard pile
-			print(f"{self.name}, there are no cards in the discard pile\n")
+			#print(f"{self.name}, there are no cards in the discard pile\n")
 			return
 		else:
-			print(f"{self.name}, You can play a card from the discard pile for free:")
-			input_option = 1
-			for card in discard_pile:
-				print(f"[{input_option}] {str(card)}")
-				input_option += 1
-			selection = int(input("Choose a card: ")) 
-			self.play_card(discard_pile.pop(selection-1),0) #free card
+			#print(f"{self.name}, You can play a card from the discard pile for free:")
+			#input_option = 1
+			for i,card in enumerate(discard_pile):
+				if card.id == input-1:
+					to_play = discard_pile.pop(i)
+
+				#print(f"[{input_option}] {str(card)}")
+				 
+			self.play_card(to_play,0) #free card
 			
 	def play_card(self,card,cost):
 		if cost != 0 and cost != 1: #Pay the players you bought shit from
 			self.east_player.resources[RESOURCE_GOLD] += cost['east']
 			self.west_player.resources[RESOURCE_GOLD] += cost['west']
 
+		self.color_count[card.color] += 1
 		self.tableau.append(card)
 		card.effect(self)
-		self.color_count[card.color] += 1
+		
 	
 	def play_wonder(self,cost):
 		if cost != 0: #Pay the players you bought shit from
@@ -350,7 +354,7 @@ class Player:
 		
     	# Create a copy of the player's resources dictionary
 		available_resources = self.resources.copy()
-		free_grey = self.free_conditional_resources[COLOR_GREY]
+		
 
 		#Seperate into brown and grey (easier for conditional resources)
 		new_cost_brown = []

@@ -19,11 +19,9 @@ def play():
     discard_pile = []
     vineyard_bazar_queue = []
     Halikarnassos_queue = []
+    action_bank = []
 
-    nbplayers = int(input("Enter number of players: "))
-    while (nbplayers < 3 or nbplayers > 6):
-        print("Player count must be between 3 and 6")
-        nbplayers = int(input("\nEnter number of player: "))
+    nbplayers = get_nb_players()
 
     players = players_setup(Halikarnassos_queue,discard_pile,nbplayers) #Includes wonder setup
 
@@ -34,7 +32,7 @@ def play():
             print("\n================================")
             print(f"TURN {turn+1}")
             print("================================\n")
-            temp_queue = []
+            
             for player in players:
                 print()
                 player.print_tableau()
@@ -42,21 +40,21 @@ def play():
                 print(player.conditional_resources)
                 print("Free Brown: "+str(player.free_conditional_resources[COLOR_BROWN])+" Free Grey: "+str(player.free_conditional_resources[COLOR_GREY]))
                 print(player.resources)
-                play_turn(player,temp_queue,discard_pile)  
+                play_turn(player,action_bank,discard_pile)  
                 
                 if turn == 5: #last turn
                     if player.has_double_last_cards:
                         print()
-                        play_turn(player,temp_queue,discard_pile)
+                        play_turn(player,action_bank,discard_pile)
                     else:
                         discard_last_card(player,discard_pile)
 
-            for card,player,cost in temp_queue: #normal card play queue
+            for card,player,cost in action_bank: #normal card play queue
                 if card == "wonder":
                     player.play_wonder(cost)
                 else:
                     player.play_card(card,cost)
-            temp_queue.clear()
+            action_bank.clear()
 
             
             for effect,player in vineyard_bazar_queue: #For cards that give coins depending on card counts 
@@ -87,7 +85,12 @@ def play():
         player.print_score()
         print()
 
-    
+def get_nb_players():
+    nbplayers = int(input("Enter number of players: "))
+    while (nbplayers < 3 or nbplayers > 6):
+        print("Player count must be between 3 and 6")
+        nbplayers = int(input("\nEnter number of player: "))
+    return nbplayers    
 
 def switch_hands(playerlist,age):
     player = playerlist[0]
@@ -136,6 +139,9 @@ def play_turn(player,temp_queue, discard_pile):
             print("Invalid option")
     
     if input_option == 0:
+        if wonder_price !=0:
+            player.resources[RESOURCE_GOLD] -= price['east']
+            player.resources[RESOURCE_GOLD] -= price['west']
         player.choose_card_for_wonder()
         temp_queue.append(("wonder",player,wonder_price))
         return
@@ -155,7 +161,7 @@ def play_turn(player,temp_queue, discard_pile):
         else: #discard card (that could be played)
             card = player.hand[input_option//2 - 1]
             player.resources[RESOURCE_GOLD] += 3
-            discard_pile.append(card)
+            discard_pile.insert(0,card)
             print("discarded: "+str(card))
     
     if not isinstance(card, Wonder):
@@ -166,12 +172,12 @@ def play_turn(player,temp_queue, discard_pile):
 
 def discard_last_card(player,discard_pile):
     print(discard_pile)
-    discard_pile.append(player.hand.pop())
+    discard_pile.insert(0,player.hand.pop())
     print(discard_pile)
 
 
 def players_setup(halikarnassos_queue,discard_pile,player_count = 3): #max 6
-    wonders_list = ["Alexandria","Babylon","Ephesos","Gizah","Halikarnassos","Rhodos"]
+    wonders_list = [Alexandria,Babylon,Ephesos,Gizah,Halikarnassos,Rhodos]
     playerlist = []
     for i in range(player_count):
         player = Player(input(f"Name of player {i}: ")) 
@@ -204,7 +210,7 @@ def assign_cards(players_list, vineyard_bazar_queue, age=1):
 
 def set_wonder(player,wonders_list,queue,discard_pile):
     wonder_name = wonders_list.pop(randint(0,len(wonders_list)-1))
-    if wonder_name == "Alexandria":
+    """if wonder_name == "Alexandria":
         wonder = Alexandria(player)
     elif wonder_name == "Babylon":
         wonder = Babylon(player)
@@ -217,9 +223,9 @@ def set_wonder(player,wonders_list,queue,discard_pile):
     elif wonder_name == "Rhodos":
         wonder = Rhodos(player)
     else:
-        wonder = Wonder()
+        wonder = Wonder()"""
 
-    player.set_wonder(wonder)
+    player.set_wonder(wonder_name(player))
     print(player.name,player.wonder.name,player.wonder.side)
 
 def deck_setup_age_3(player_count):

@@ -1,0 +1,5 @@
+Olympia A wonder removed (too complicated for AI).
+
+Cost involving buying other players returns lowest overall cost (even though normally you can choose).
+
+Limit of playable cards from discard: 15 (last card)

@@ -16,7 +16,7 @@ class Card:
     def __str__(self) -> str:
         return f"{ANSI[self.color]}{self.name}\033[0m"
     def __repr__(self) -> str:
-        return f"{ANSI[self.color]}{self.name}"
+        return f"{ANSI[self.color]}{self.name}\033[0m"
     
     def print_unavailable(self) ->str:
         return print(f"{ANSI['unavailable']}{self.name}\033[0m")
@@ -305,14 +305,24 @@ class Vineyard(Card):
         super().__init__(id,"Vineyard",COLOR_YELLOW,2,None)
         self.queue = queue
     def effect(self,player):
-        self.queue.insert(0,(lambda p : p.add_coins_per_card(1,COLOR_BROWN,True,True,True),player))
+        bonus = 0
+        for card,opponent,_ in self.queue:
+            if card!="wonder" and card.color==COLOR_BROWN:
+                if opponent == player.east_player or opponent == player.west_player:
+                    bonus += 1
+        player.add_coins_per_card(1,COLOR_BROWN,True,True,True,bonus)
 
 class Bazar(Card):
     def __init__(self,queue,id=38):
         super().__init__(id,"Bazar",COLOR_YELLOW,2,None)
         self.queue = queue
     def effect(self,player):
-        self.queue.insert(0,(lambda p : p.add_coins_per_card(2,COLOR_GREY,True,True,True),player))
+        bonus = 0
+        for card,opponent,_ in self.queue:
+            if card!="wonder" and card.color==COLOR_GREY:
+                if opponent == player.east_player or opponent == player.west_player:
+                    bonus += 1
+        player.add_coins_per_card(2,COLOR_GREY,True,True,True,bonus)
 
 #Red Cards
 

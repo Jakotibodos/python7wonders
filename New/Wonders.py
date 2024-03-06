@@ -4,7 +4,8 @@ from random import choice
 #from game import add_effect_to_queue
 
 class Wonder:
-	def __init__(self):
+	def __init__(self,id):
+		self.id = id
 		self.side = choice(["A","B"]) #"A" or "B"
 		self.stages_completed = 0
 		self.stages = []
@@ -23,7 +24,7 @@ class Wonder:
 
 class Ephesos(Wonder):
 	def __init__(self,player):
-		super().__init__()
+		super().__init__(0)
 		self.name = "Ephesos"
 		player.add_resource(RESOURCE_PAPYRUS)
 		self.cost = [RESOURCE_STONE,RESOURCE_STONE]
@@ -57,7 +58,7 @@ class Ephesos(Wonder):
 
 class Babylon(Wonder):
 	def __init__(self,player):
-		super().__init__()
+		super().__init__(1)
 		self.name = "Babylon"
 		player.add_resource(RESOURCE_BRICK)
 		if self.side == "A":
@@ -91,7 +92,7 @@ class Babylon(Wonder):
 
 class Gizah(Wonder):
 	def __init__(self,player):
-		super().__init__()
+		super().__init__(2)
 		self.name = "Gizah"
 		player.add_resource(RESOURCE_STONE)
 		if self.side == "A":
@@ -128,12 +129,11 @@ class Gizah(Wonder):
 
 
 class Halikarnassos(Wonder):
-	def __init__(self,player,queue,discard_pile):
-		super().__init__()
+	def __init__(self,player,env):
+		super().__init__(3)
 		self.name = "Halikarnassos"
 		player.add_resource(RESOURCE_LOOM)
-		self.queue = queue
-		self.discard_pile = discard_pile
+		self.env = env
 		self.side = "B"
 		if self.side == "A":
 			self.cost = [RESOURCE_BRICK,RESOURCE_BRICK]
@@ -147,7 +147,8 @@ class Halikarnassos(Wonder):
 				player.add_points(POINTS_WONDER,3)
 				self.cost = [RESOURCE_ORE,RESOURCE_ORE,RESOURCE_ORE]
 			elif self.stages_completed == 1:
-				self.queue.append((lambda p : p.play_from_discard(self.discard_pile),player))
+				if self.env.discard:
+					self.env.next_player.insert(0,(player.id,2)) 
 				self.cost = [RESOURCE_LOOM,RESOURCE_LOOM]
 			else:
 				player.add_points(POINTS_WONDER,7)
@@ -155,21 +156,24 @@ class Halikarnassos(Wonder):
 		else: #B Side
 			if self.stages_completed == 0:
 				player.add_points(POINTS_WONDER,2)
-				self.queue.append((lambda p : p.play_from_discard(self.discard_pile),player))
+				if self.env.discard:
+					self.env.next_player.insert(0,(player.id,2)) 
 				self.cost = [RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK]
 			elif self.stages_completed == 1:
 				player.add_points(POINTS_WONDER,1)
-				self.queue.append((lambda p : p.play_from_discard(self.discard_pile),player))
+				if self.env.discard:
+					self.env.next_player.insert(0,(player.id,2)) 
 				self.cost = [RESOURCE_GLASS,RESOURCE_PAPYRUS,RESOURCE_LOOM]
 			else:	
-				self.queue.append((lambda p : p.play_from_discard(self.discard_pile),player))
+				if self.env.discard:
+					self.env.next_player.insert(0,(player.id,2)) 
 				self.all_done = True
 		self.stages_completed += 1
 		
 
 class Alexandria(Wonder):
 	def __init__(self,player):
-		super().__init__()
+		super().__init__(4)
 		self.name = "Alexandria"
 		player.add_resource(RESOURCE_GLASS)
 		
@@ -204,7 +208,7 @@ class Alexandria(Wonder):
 
 class Rhodos(Wonder):
 	def __init__(self,player):
-		super().__init__()
+		super().__init__(5)
 		self.name = "Rhodos"
 		player.add_resource(RESOURCE_ORE)
 		if self.side == "A":
