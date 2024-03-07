@@ -8,7 +8,7 @@ from SevenWonders import SevenWondersEnv
 env = SevenWondersEnv()
 
 
-
+    
 
 
 
