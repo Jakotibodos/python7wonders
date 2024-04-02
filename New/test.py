@@ -19,7 +19,7 @@ while not env.done:
     print(player.conditional_resources)
     print("Free Brown: "+str(player.free_conditional_resources[COLOR_BROWN])+" Free Grey: "+str(player.free_conditional_resources[COLOR_GREY]))
     print(player.resources)
-    if env.turn_type == 0:
+    if env.turn_type == 0 or env.turn_type ==3:
         cost = player.get_hand_cost()
         wonder_price = player.get_price(player.wonder)
         player.print_wonder_option(wonder_price, bool(env.observation[0]))
@@ -27,7 +27,7 @@ while not env.done:
     elif env.turn_type == 1:
         cost = [-1 for _ in range(len(player.hand))]
         player.print_available_cards(cost)
-    else:
+    elif env.turn_type == 2:
         print(f"{player.name}, You can play a card from the discard pile for free:")
         for card in env.discard:
             print(f"[{card.id+1}] {str(card)}")

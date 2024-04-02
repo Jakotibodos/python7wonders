@@ -61,6 +61,7 @@ class Babylon(Wonder):
 		super().__init__(1)
 		self.name = "Babylon"
 		player.add_resource(RESOURCE_BRICK)
+		self.side = "B"
 		if self.side == "A":
 			self.cost = [RESOURCE_BRICK,RESOURCE_BRICK]
 		else:
@@ -147,8 +148,7 @@ class Halikarnassos(Wonder):
 				player.add_points(POINTS_WONDER,3)
 				self.cost = [RESOURCE_ORE,RESOURCE_ORE,RESOURCE_ORE]
 			elif self.stages_completed == 1:
-				if self.env.discard:
-					self.env.next_player.insert(0,(player.id,2)) 
+				#effect done in game env
 				self.cost = [RESOURCE_LOOM,RESOURCE_LOOM]
 			else:
 				player.add_points(POINTS_WONDER,7)
@@ -156,17 +156,14 @@ class Halikarnassos(Wonder):
 		else: #B Side
 			if self.stages_completed == 0:
 				player.add_points(POINTS_WONDER,2)
-				if self.env.discard:
-					self.env.next_player.insert(0,(player.id,2)) 
+				#effect done in game env
 				self.cost = [RESOURCE_BRICK,RESOURCE_BRICK,RESOURCE_BRICK]
 			elif self.stages_completed == 1:
 				player.add_points(POINTS_WONDER,1)
-				if self.env.discard:
-					self.env.next_player.insert(0,(player.id,2)) 
+				#effect done in game env
 				self.cost = [RESOURCE_GLASS,RESOURCE_PAPYRUS,RESOURCE_LOOM]
 			else:	
-				if self.env.discard:
-					self.env.next_player.insert(0,(player.id,2)) 
+				#effect done in game env
 				self.all_done = True
 		self.stages_completed += 1
 		

@@ -307,7 +307,7 @@ class Vineyard(Card):
     def effect(self,player):
         bonus = 0
         for card,opponent,_ in self.queue:
-            if card!="wonder" and card.color==COLOR_BROWN:
+            if card not in {"Halikarnassos","Ephesos","Rhodos","Alexandria","Babylon","Gizah"} and card.color==COLOR_BROWN:
                 if opponent == player.east_player or opponent == player.west_player:
                     bonus += 1
         player.add_coins_per_card(1,COLOR_BROWN,True,True,True,bonus)
@@ -319,7 +319,7 @@ class Bazar(Card):
     def effect(self,player):
         bonus = 0
         for card,opponent,_ in self.queue:
-            if card!="wonder" and card.color==COLOR_GREY:
+            if card not in {"Halikarnassos","Ephesos","Rhodos","Alexandria","Babylon","Gizah"} and card.color==COLOR_GREY:
                 if opponent == player.east_player or opponent == player.west_player:
                     bonus += 1
         player.add_coins_per_card(2,COLOR_GREY,True,True,True,bonus)

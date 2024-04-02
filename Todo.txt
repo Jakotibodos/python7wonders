@@ -1,12 +1,7 @@
 (O,B)
-2 bricks
+1 free
+1 loom
 
-cannot afford 3 bricks only
-but can afford 3 bricks + greys
+can afford 3 bricks only (must pay for one)
+2 bricks and a loom need to pay for 1 (not supposed to)
 
-(s,w)
-ore
-1 free brown
-1 free grey
-1 glass
-cannot afford town hall

@@ -32,7 +32,7 @@ class SevenWondersEnv(gym.Env):
         player = self.current_player
 
         
-        obs[:150] = self.legal_actions
+        obs[:151] = self.legal_actions
             
         for card in player.tableau: #obs 89-163 (cards built)
             obs[151+card.id] = 1
@@ -57,7 +57,7 @@ class SevenWondersEnv(gym.Env):
 
     @property
     def legal_actions(self):
-        legal_actions = np.zeros(150)
+        legal_actions = np.zeros(151)
         player = self.current_player
         
         if self.turn_type != 2: #normal turn or wonder discard
@@ -150,6 +150,8 @@ class SevenWondersEnv(gym.Env):
         elif self.turn_type == 1: #wonder turn, choose which card to tuck
             action = self.translate_action(action,player)   
             player.choose_card_for_wonder(action) 
+            if self.turn == 6 and player.hand:
+                self.discard.append(player.hand.pop())
 
         elif self.turn_type == 2 and self.discard: #Halikarnassos turn, choose discarded card to play
             player.play_from_discard(action,self.discard) 
@@ -162,9 +164,15 @@ class SevenWondersEnv(gym.Env):
                 if price !=0:
                     player.resources[RESOURCE_GOLD] -= price['east']
                     player.resources[RESOURCE_GOLD] -= price['west']
-                self.wonder_turn = True
                 self.next_player.append((self.current_player_num,1)) #keep the current player
-                self.action_bank.append(("wonder",player,price))
+                self.action_bank.append((player.wonder.name,player,price))
+                #If babylon b stage 2 is played on 6th turn, make 7th card available to play
+                if player.wonder.name == "Babylon" and \
+                    self.turn == 6 and \
+                    player.wonder.side == "B" and \
+                    player.wonder.stages_completed == 1:
+                    self.next_player.append((self.current_player_num,3))
+                    
             
             else:
                 if action % 2 == 1: #Add card to play queue
@@ -185,15 +193,26 @@ class SevenWondersEnv(gym.Env):
                     player.resources[RESOURCE_GOLD] += 3
                     self.discard.insert(0,card)
                     #print("discarded: "+str(card))
+                
+                if self.turn == 6:
+                    if player.has_double_last_cards and self.turn_type != 3: #If played first card from 2 last cards
+                        self.next_player.append((self.current_player_num,3))
+                    elif (self.current_player_num,1) not in self.next_player:
+                           self.discard.append(player.hand.pop()) #discard last card
             
             
-            if not self.next_player: #if all players have played (except halikarnassos)
-                for card,player,cost in self.action_bank: 
-                    if card == "wonder":
-                        player.play_wonder(cost)
-                    else:
-                        player.play_card(card,cost)
-                self.action_bank.clear()
+            
+        if not self.next_player: #if all players have played (except halikarnassos)
+            for card,player,cost in self.action_bank: 
+                if card in {"Ephesos","Rhodos","Alexandria","Babylon","Gizah"}:
+                    player.play_wonder(cost)
+                elif card == "Halikarnassos":
+                    player.play_wonder(cost)
+                    if self.discard:
+                        self.next_player.insert(0,(player.id,2)) 
+                else:
+                    player.play_card(card,cost)
+            self.action_bank.clear()
                 
             
         print("next:", self.next_player)
@@ -276,8 +295,10 @@ class SevenWondersEnv(gym.Env):
     def players_setup(self): #max 6
         wonders_list = [Alexandria,Babylon,Ephesos,Gizah,Halikarnassos,Rhodos]
         playerlist = []
+        names = ["Jakob","Dara","Nicholas"]
         for i in range(self.n_players):
-            player = Player(f"Player {i+1}",i) 
+            #player = Player(f"Player {i+1}",i) 
+            player = Player(f"{names[i]}",i)
             self.set_wonder(player,wonders_list)
             playerlist.append(player)
 
@@ -290,7 +311,7 @@ class SevenWondersEnv(gym.Env):
     def set_wonder(self,player,wonders_list):
         wonder = wonders_list.pop(randint(0,len(wonders_list)-1))
         player.set_wonder(wonder(player) if wonder != Halikarnassos else wonder(player,self))
-        #print(player.name,player.wonder.name,player.wonder.side)
+        print(player.name,player.wonder.name,player.wonder.side)
     
 
     def switch_hands(self):
